@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/card.json",
+  "name": "Trilium note",
+  "description": "Shows one Trilium Note card to whoever may read it.",
+  "key": "trilium_viewer",
+  "mainResource": "trilium_index.html",
+  "additionalResources": [
+    "trilium_trilium-app.css",
+    "trilium_trilium-app.js"
+  ],
+  "genericPermission": 1,
+  "properties": [
+    {
+      "name": "app_styles",
+      "value": "true"
+    }
+  ]
+}

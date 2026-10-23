@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "show_lore",
+  "description": "Shows the note pinned to a token to whoever asked; the card's own permissions decide whether they may read it.",
+  "hook": 0,
+  "prefix": "trilium",
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "Only a token they can see",
+        "EntityId": "%elementId%",
+        "Permission": "Read",
+        "StopIfDenied": true
+      }
+    },
+    {
+      "Type": "GetPropertyValue",
+      "Data": {
+        "Label": "The pinned note",
+        "ParentId": "%elementId%",
+        "PropertyName": "trilium_card",
+        "Output": "pinned",
+        "DefaultValue": ""
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Only an id",
+        "Include": "trilium_trilium.js",
+        "Script": "return { lore: /^[0-9a-fA-F-]{36}$/.test(String(vars.pinned)) ? vars.pinned : '' };"
+      }
+    },
+    {
+      "Type": "ShowView",
+      "Data": {
+        "Label": "Show it",
+        "ViewKey": "trilium_viewer",
+        "Player": "%playerId%",
+        "Data": "{\"view\":\"viewer\",\"cardId\":\"%lore%\"}"
+      }
+    }
+  ]
+}
