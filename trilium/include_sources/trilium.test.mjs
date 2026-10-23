@@ -135,6 +135,8 @@ test('answer goes to the view that asked, or nowhere', () => {
   assert.deepEqual(answer({ replyTo: 'addon_v1_trilium' }, { kind: 'saved', ok: true }),
     { reply: { kind: 'saved', ok: true }, replyTo: 'addon_v1_trilium', hasReply: 'yes' });
   assert.equal(answer({}, { kind: 'x' }).hasReply, 'no');
+  // Each window registers its own name ("addon_w<random>_trilium"), scoped by the app with the card id.
+  assert.equal(answer({ replyTo: 'addon_1b4e28ba-2fa1-11d2-883f-0016d3cca427_wk3j9x2_trilium' }, {}).hasReply, 'yes');
   // Only one of the view's own panels: an action can't be pointed at the app's panels.
   assert.equal(answer({ replyTo: 'BattleMap_token' }, { kind: 'x' }).hasReply, 'no');
 });

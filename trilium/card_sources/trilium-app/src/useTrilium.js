@@ -1,25 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createReplies } from './lib/replies.mjs';
+import { windowPanelName } from './lib/panelName.mjs';
 
-// Runs the addon's actions and waits for their answer. The window registers its
-// "addon_trilium" panel and passes its name as replyTo; the action answers there with
+// Runs the addon's actions and waits for their answer. The window registers its own
+// "addon_w<random>_trilium" panel and passes its name as replyTo; the action answers there with
 // RunClientCommand (command Reply). call() resolves with the reply, or rejects with its
 // error.
 export function useTrilium(Api) {
   const replies = useRef(null);
   if (!replies.current) replies.current = createReplies();
+  const [panel] = useState(windowPanelName);
   const [replyTo, setReplyTo] = useState('');
 
   useEffect(() => {
     let live = true;
-    Api.ClientMediator.register('addon_trilium', { Reply: (data) => { replies.current.deliver(data); return true; } })
+    Api.ClientMediator.register(panel, { Reply: (data) => { replies.current.deliver(data); return true; } })
       .then((name) => { if (live) setReplyTo(name); })
       .catch((err) => console.error('Trilium: could not register the reply panel', err));
     return () => {
       live = false;
-      Api.ClientMediator.unregister('addon_trilium');
+      Api.ClientMediator.unregister(panel);
     };
-  }, [Api]);
+  }, [Api, panel]);
 
   const call = useCallback((action, kind, args = {}) => {
     if (!replyTo) return Promise.reject(new Error('Still starting, try again in a moment.'));

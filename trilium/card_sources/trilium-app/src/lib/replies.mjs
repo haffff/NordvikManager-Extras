@@ -1,4 +1,4 @@
-// The addon's actions answer a window by RunClientCommand to its "addon_trilium" panel
+// The addon's actions answer a window by RunClientCommand to its own reply panel
 // (command Reply, data { kind, ok, error?, ... }). wait(kind) is settled by the next reply
 // of that kind, in order; a reply with ok: false rejects with its error.
 export function createReplies({ timeoutMs = 60000, setTimer = setTimeout, clearTimer = clearTimeout } = {}) {

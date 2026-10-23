@@ -54,7 +54,7 @@ include_sources/trilium.mjs shared by the actions' RunScript steps (Include: tri
 - **Actions do the talking:** every request to Trilium is a SendRequest or DownloadResource step on the
   GM's server; the browser never talks to Trilium. Every action that does starts with RequirePermission
   (Edit on the game), so players can't run it by name.
-- **Answers:** a window registers the `addon_trilium` panel and passes its name as `replyTo`. The action
+- **Answers:** each window registers its own panel (`addon_w<random>_trilium`, as two windows of one view are the same card) and passes its name as `replyTo`. The action
   answers with RunClientCommand `Reply` `{ kind, ok, error?, … }`. Run from a menu, there's no window, so
   the action whispers the GM in chat instead.
 - **Untrusted content:** note HTML is rewritten on import (images to resources, note links to ids) and

@@ -3,7 +3,7 @@
 // has no URL class, DOM or network. pnpm run pack drops the `export` keywords.
 
 export const RESOURCE_PREFIX = 'trilium_img_';
-export const REPLY_PANEL = /^addon_[A-Za-z0-9-]+_trilium$/;
+export const REPLY_PANEL = /^addon_[A-Za-z0-9_-]+_trilium$/;
 
 // ── addresses ────────────────────────────────────────────────────────────────
 
