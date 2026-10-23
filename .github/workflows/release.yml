@@ -1,0 +1,27 @@
+name: Release
+
+# Releases one addon. Bump "version" in <addon>/addon_files/info.json first, then run
+# this and pick the addon. Each addon has its own version, so the tag is
+# <addon>-<version> and the asset <addon>.zip. The registry
+# (haffff/NordvikManager-Addons) picks the new version up in its daily sync PR.
+on:
+  workflow_dispatch:
+    inputs:
+      addon:
+        description: Addon to release
+        required: true
+        type: choice
+        options:
+          - trilium
+
+jobs:
+  release:
+    uses: haffff/NordvikManager-Addons/.github/workflows/release-addon.yml@main
+    permissions:
+      contents: write
+    with:
+      addon-dir: ${{ inputs.addon }}
+      pack-command: pnpm run pack ${{ inputs.addon }}
+      zip-path: packed/${{ inputs.addon }}.zip
+      asset-name: ${{ inputs.addon }}.zip
+      tag: ${{ inputs.addon }}-{version}
