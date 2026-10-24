@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/card.json",
+  "name": "Obsidian",
+  "description": "The GM's Obsidian window: settings and note search.",
+  "key": "obsidian_gm",
+  "mainResource": "obsidian_index.html",
+  "additionalResources": [
+    "obsidian_obsidian-app.css",
+    "obsidian_obsidian-app.js"
+  ],
+  "properties": [
+    {
+      "name": "app_styles",
+      "value": "true"
+    }
+  ]
+}

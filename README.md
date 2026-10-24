@@ -6,6 +6,7 @@ version and release, and installs on its own; none of them needs a game system.
 | Addon | Folder | Addon key |
 |---|---|---|
 | Trilium: search your Trilium notes from the game, pin them to tokens and share lore with players | `trilium/` | `trilium` |
+| Obsidian: search your Obsidian vault from the game (through the Local REST API plugin), pin notes to tokens and share lore with players | `obsidian/` | `obsidian` |
 
 ## Layout of an addon
 

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/card.json",
+  "name": "Obsidian note",
+  "description": "Shows one Obsidian Note card to whoever may read it.",
+  "key": "obsidian_viewer",
+  "mainResource": "obsidian_index.html",
+  "additionalResources": [
+    "obsidian_obsidian-app.css",
+    "obsidian_obsidian-app.js"
+  ],
+  "genericPermission": 1,
+  "properties": [
+    {
+      "name": "app_styles",
+      "value": "true"
+    }
+  ]
+}
