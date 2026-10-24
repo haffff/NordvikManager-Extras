@@ -21,10 +21,13 @@ export function isNoteId(id) {
   return typeof id === 'string' && /^[A-Za-z0-9_]{1,64}$/.test(id);
 }
 
-// No ?limit=: Trilium applies it before ranking, keeping the first matches in storage order,
-// so the note you meant could be cut off. searchResults keeps the best ones instead.
+// Trilium applies ?limit= before ranking, keeping the first matches in storage order, so it is
+// generous here and searchResults ranks what comes back. Without one Trilium sends every match
+// (fuzzy ones too): megabytes on a big database, more than RunScript can read.
+export const SEARCH_FETCH_LIMIT = 200;
+
 export function searchUrl(base, query) {
-  return base + '/etapi/notes?search=' + encodeURIComponent(String(query || '').trim());
+  return base + '/etapi/notes?search=' + encodeURIComponent(String(query || '').trim()) + '&limit=' + SEARCH_FETCH_LIMIT;
 }
 
 export function noteUrl(base, noteId, part) {
@@ -65,17 +68,27 @@ function describeFailure(status, raw, body, what) {
   return 'Trilium answered ' + status + ' for ' + what + message;
 }
 
-// The search results the list shows: the first `limit` (30), best first, as Trilium ranked them.
-export function searchResults(body, limit) {
-  const max = limit || 30;
+// The search results the list shows, the first 30: notes whose title is the query first, then
+// titles starting with it, then titles containing it (ignoring case); the rest in Trilium's order.
+export function searchResults(body, query) {
   const results = body && Array.isArray(body.results) ? body.results : [];
-  const out = [];
-  for (let i = 0; i < results.length && out.length < max; i++) {
+  const q = String(query || '').trim().toLowerCase();
+  const rank = (title) => {
+    const t = title.toLowerCase();
+    if (!q) return 3;
+    if (t === q) return 0;
+    if (t.indexOf(q) === 0) return 1;
+    return t.indexOf(q) !== -1 ? 2 : 3;
+  };
+  const found = [];
+  for (let i = 0; i < results.length; i++) {
     const n = results[i];
     if (!n || !isNoteId(n.noteId)) continue;
-    out.push({ noteId: n.noteId, title: String(n.title || ''), type: String(n.type || ''), modified: String(n.utcDateModified || '') });
+    const title = String(n.title || '');
+    found.push({ rank: rank(title), i: i, note: { noteId: n.noteId, title: title, type: String(n.type || ''), modified: String(n.utcDateModified || '') } });
   }
-  return out;
+  found.sort((a, b) => a.rank - b.rank || a.i - b.i);
+  return found.slice(0, 30).map((f) => f.note);
 }
 
 // ── note content ─────────────────────────────────────────────────────────────

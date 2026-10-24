@@ -53,8 +53,9 @@ export default function Search({ call, ready, pinTo }) {
           placeholder='Words, "an exact phrase" or #label' autoFocus />
         <button type="submit" disabled={!ready || busy || !query.trim()}>Search</button>
       </form>
+      {busy && <p className="tri-muted">Searching…</p>}
       {error && <p className="tri-error">{error}</p>}
-      {results && results.length === 0 && <p className="tri-muted">Nothing found.</p>}
+      {!busy && results && results.length === 0 && <p className="tri-muted">Nothing found.</p>}
       <ul className="tri-results">
         {(results ?? []).map((n) => (
           <li key={n.noteId}>

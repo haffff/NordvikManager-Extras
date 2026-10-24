@@ -95,7 +95,7 @@
       "Data": {
         "Label": "The results",
         "Include": "trilium_trilium.js",
-        "Script": "const r = readResponse(vars.found, 'search results');\nif (!r.ok) return outcome(vars, { kind: 'search', ok: false, error: r.error });\nreturn outcome(vars, { kind: 'search', ok: true, query: String(vars.query), results: searchResults(r.body) });"
+        "Script": "const r = readResponse(vars.found, 'search results');\nif (!r.ok) return outcome(vars, { kind: 'search', ok: false, error: r.error });\nreturn outcome(vars, { kind: 'search', ok: true, query: String(vars.query), results: searchResults(r.body, vars.query) });"
       }
     },
     {

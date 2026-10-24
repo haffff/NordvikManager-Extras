@@ -25,15 +25,12 @@ test('note ids are letters, digits and underscores only', () => {
   for (const bad of ['', '../etc', 'a/b', 'a b', 'x'.repeat(65), null]) assert.equal(isNoteId(bad), false, String(bad));
 });
 
-test('the search query is encoded into the URL', () => {
+test('the search query is encoded into the URL, with a limit', () => {
+  // Without a limit Trilium sends every match (and fuzzy ones), which can be megabytes: more
+  // than RunScript can read. With one it keeps that many in storage order, so it is generous
+  // and searchResults ranks them.
   assert.equal(searchUrl('http://t', 'dragon & "lair"'),
-    'http://t/etapi/notes?search=dragon%20%26%20%22lair%22');
-});
-
-test('the search URL never asks Trilium for a limit', () => {
-  // Trilium applies ?limit= before ranking (the first N matches in storage order), so an exact
-  // title could be cut off. searchResults keeps the best ones instead.
-  assert.doesNotMatch(searchUrl('http://t', 'x'), /limit/);
+    'http://t/etapi/notes?search=dragon%20%26%20%22lair%22&limit=200');
 });
 
 test('note URLs, and none for a bad id', () => {
@@ -86,10 +83,21 @@ test('searchResults keeps what the list shows', () => {
   assert.deepEqual(searchResults(null), []);
 });
 
-test('searchResults keeps the first ones, in the order Trilium ranked them', () => {
+test('searchResults keeps the first 30', () => {
   const body = { results: Array.from({ length: 40 }, (_, i) => ({ noteId: 'n' + i, title: 'T' + i })) };
   assert.deepEqual(searchResults(body).map((n) => n.noteId), body.results.slice(0, 30).map((n) => n.noteId));
-  assert.equal(searchResults(body, 5).length, 5);
+});
+
+test('searchResults puts title matches first: exact, then starting with, then containing', () => {
+  const titles = ['Notes about Simon', 'Session 3', 'Simon Adler', 'simon adler', 'Simonetta', 'Postać Princessa'];
+  const body = { results: titles.map((title, i) => ({ noteId: 'n' + i, title })) };
+  const order = (query) => searchResults(body, query).map((n) => n.title);
+  // The rest keep Trilium's order.
+  assert.deepEqual(order('Simon Adler'),
+    ['Simon Adler', 'simon adler', 'Notes about Simon', 'Session 3', 'Simonetta', 'Postać Princessa']);
+  assert.deepEqual(order('  simon '),
+    ['Simon Adler', 'simon adler', 'Simonetta', 'Notes about Simon', 'Session 3', 'Postać Princessa']);
+  assert.deepEqual(order('#label'), titles);
 });
 
 // ── note content ─────────────────────────────────────────────────────────────
