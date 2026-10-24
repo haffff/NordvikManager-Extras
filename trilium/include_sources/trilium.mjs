@@ -21,8 +21,10 @@ export function isNoteId(id) {
   return typeof id === 'string' && /^[A-Za-z0-9_]{1,64}$/.test(id);
 }
 
-export function searchUrl(base, query, limit) {
-  return base + '/etapi/notes?search=' + encodeURIComponent(String(query || '').trim()) + '&limit=' + (limit || 30);
+// No ?limit=: Trilium applies it before ranking, keeping the first matches in storage order,
+// so the note you meant could be cut off. searchResults keeps the best ones instead.
+export function searchUrl(base, query) {
+  return base + '/etapi/notes?search=' + encodeURIComponent(String(query || '').trim());
 }
 
 export function noteUrl(base, noteId, part) {
@@ -63,11 +65,12 @@ function describeFailure(status, raw, body, what) {
   return 'Trilium answered ' + status + ' for ' + what + message;
 }
 
-// The search results the list shows.
-export function searchResults(body) {
+// The search results the list shows: the first `limit` (30), best first, as Trilium ranked them.
+export function searchResults(body, limit) {
+  const max = limit || 30;
   const results = body && Array.isArray(body.results) ? body.results : [];
   const out = [];
-  for (let i = 0; i < results.length; i++) {
+  for (let i = 0; i < results.length && out.length < max; i++) {
     const n = results[i];
     if (!n || !isNoteId(n.noteId)) continue;
     out.push({ noteId: n.noteId, title: String(n.title || ''), type: String(n.type || ''), modified: String(n.utcDateModified || '') });

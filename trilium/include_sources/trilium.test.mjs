@@ -26,8 +26,14 @@ test('note ids are letters, digits and underscores only', () => {
 });
 
 test('the search query is encoded into the URL', () => {
-  assert.equal(searchUrl('http://t', 'dragon & "lair"', 20),
-    'http://t/etapi/notes?search=dragon%20%26%20%22lair%22&limit=20');
+  assert.equal(searchUrl('http://t', 'dragon & "lair"'),
+    'http://t/etapi/notes?search=dragon%20%26%20%22lair%22');
+});
+
+test('the search URL never asks Trilium for a limit', () => {
+  // Trilium applies ?limit= before ranking (the first N matches in storage order), so an exact
+  // title could be cut off. searchResults keeps the best ones instead.
+  assert.doesNotMatch(searchUrl('http://t', 'x'), /limit/);
 });
 
 test('note URLs, and none for a bad id', () => {
@@ -78,6 +84,12 @@ test('searchResults keeps what the list shows', () => {
     { noteId: 'n2', title: 'Map', type: 'image', modified: '' },
   ]);
   assert.deepEqual(searchResults(null), []);
+});
+
+test('searchResults keeps the first ones, in the order Trilium ranked them', () => {
+  const body = { results: Array.from({ length: 40 }, (_, i) => ({ noteId: 'n' + i, title: 'T' + i })) };
+  assert.deepEqual(searchResults(body).map((n) => n.noteId), body.results.slice(0, 30).map((n) => n.noteId));
+  assert.equal(searchResults(body, 5).length, 5);
 });
 
 // ── note content ─────────────────────────────────────────────────────────────

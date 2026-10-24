@@ -31,7 +31,7 @@
       "Data": {
         "Label": "The search URL",
         "Include": "trilium_trilium.js",
-        "Script": "const base = baseUrl(vars.url);\nif (!base) return outcome(vars, { kind: 'search', ok: false, error: 'Set the Trilium address in Settings first.' });\nif (!String(vars.query || '').trim()) return outcome(vars, { kind: 'search', ok: false, error: 'Type something to search for.' });\nreturn outcome(vars, { kind: 'search', ok: true }, { url: searchUrl(base, vars.query, 30) });"
+        "Script": "const base = baseUrl(vars.url);\nif (!base) return outcome(vars, { kind: 'search', ok: false, error: 'Set the Trilium address in Settings first.' });\nif (!String(vars.query || '').trim()) return outcome(vars, { kind: 'search', ok: false, error: 'Type something to search for.' });\nreturn outcome(vars, { kind: 'search', ok: true }, { url: searchUrl(base, vars.query) });"
       }
     },
     {
