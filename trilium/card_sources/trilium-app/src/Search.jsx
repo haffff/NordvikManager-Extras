@@ -9,8 +9,9 @@ export default function Search({ call, ready, pinTo }) {
   const [busy, setBusy] = useState(false);
   const [rows, setRows] = useState({}); // noteId -> { ok, text }
 
-  const search = async (e) => {
-    e?.preventDefault();
+  const canSearch = ready && !busy && Boolean(query.trim());
+
+  const search = async () => {
     setBusy(true);
     setError('');
     try {
@@ -48,11 +49,13 @@ export default function Search({ call, ready, pinTo }) {
   return (
     <div className="tri-page">
       <h1>{pinTo ? 'Pin a Trilium note to the token' : 'Search Trilium'}</h1>
-      <form className="tri-row" onSubmit={search}>
+      {/* Not a form element: the card's sandbox blocks form submission (no allow-forms). */}
+      <div className="tri-row">
         <input className="tri-grow" value={query} onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter' && canSearch) search(); }}
           placeholder='Words, "an exact phrase" or #label' autoFocus />
-        <button type="submit" disabled={!ready || busy || !query.trim()}>Search</button>
-      </form>
+        <button disabled={!canSearch} onClick={() => search()}>Search</button>
+      </div>
       {busy && <p className="tri-muted">Searching…</p>}
       {error && <p className="tri-error">{error}</p>}
       {!busy && results && results.length === 0 && <p className="tri-muted">Nothing found.</p>}
