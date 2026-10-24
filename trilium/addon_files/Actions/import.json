@@ -27,6 +27,16 @@
       }
     },
     {
+      "Type": "GetPropertyValue",
+      "Data": {
+        "Label": "The folder for notes",
+        "Of": "game",
+        "PropertyName": "trilium_folder",
+        "Output": "folder",
+        "DefaultValue": ""
+      }
+    },
+    {
       "Type": "RunScript",
       "Data": {
         "Label": "The note URLs",
@@ -197,7 +207,8 @@
               "Label": "A new card",
               "Name": "%title%",
               "TemplateId": "%templateId%",
-              "Output": "noteCardId"
+              "Output": "noteCardId",
+              "Folder": "%folder%"
             }
           }
         ]

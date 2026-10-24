@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { toIncludeScript } from '../../scripts/includeScript.mjs';
 import {
-  baseUrl, isNoteId, searchUrl, noteUrl, readResponse, searchResults, prepareNote,
+  baseUrl, folderPath, isNoteId, searchUrl, noteUrl, readResponse, searchResults, prepareNote,
   noteHtml, resourceKey, indexedCard, withIndexed, answer, outcome, rawBody,
 } from './trilium.mjs';
 
@@ -31,6 +31,21 @@ test('the search query is encoded into the URL, with a limit', () => {
   // and searchResults ranks them.
   assert.equal(searchUrl('http://t', 'dragon & "lair"'),
     'http://t/etapi/notes?search=dragon%20%26%20%22lair%22&limit=200');
+});
+
+test('folderPath tidies the Cards panel folder, empty for the top level', () => {
+  assert.equal(folderPath('  Lore /  Trilium // '), 'Lore/Trilium');
+  assert.equal(folderPath('Notes'), 'Notes');
+  assert.equal(folderPath('  '), '');
+  assert.equal(folderPath(' / '), '');
+  assert.equal(folderPath(undefined), '');
+});
+
+test('folderPath refuses what the server would: over 10 levels or a name over 100 characters', () => {
+  assert.equal(folderPath(Array.from({ length: 10 }, (_, i) => 'f' + i).join('/')).split('/').length, 10);
+  assert.equal(folderPath(Array.from({ length: 11 }, (_, i) => 'f' + i).join('/')), null);
+  assert.equal(folderPath('x'.repeat(100)), 'x'.repeat(100));
+  assert.equal(folderPath('x'.repeat(101)), null);
 });
 
 test('note URLs, and none for a bad id', () => {

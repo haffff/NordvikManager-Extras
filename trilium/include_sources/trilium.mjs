@@ -16,6 +16,15 @@ export function baseUrl(url) {
   return trimmed;
 }
 
+// The Cards panel folder imported notes go in, e.g. "Lore/Trilium" (CreateCard's Folder):
+// names trimmed, empty ones dropped; "" for the top level; null for what the server refuses
+// (over 10 levels, or a name over 100 characters).
+export function folderPath(value) {
+  const names = String(value == null ? '' : value).split('/').map((x) => x.trim()).filter((x) => x.length > 0);
+  if (names.length > 10 || names.some((x) => x.length > 100)) return null;
+  return names.join('/');
+}
+
 // Trilium note and attachment ids: letters, digits and underscores ("root", "_hidden").
 export function isNoteId(id) {
   return typeof id === 'string' && /^[A-Za-z0-9_]{1,64}$/.test(id);

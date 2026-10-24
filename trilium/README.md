@@ -11,6 +11,10 @@ when the story gets there. Addon key `trilium`.
    it in **Application Settings → Server → Local network access**, e.g. `localhost:8080`.
 3. In the game: **Addons → Trilium → Settings**. Enter the address (`http://localhost:8080`) and the token,
    **Save**, then **Test connection**.
+4. Optional, in the same window: a **folder for imported notes**, e.g. `Lore/Trilium` (`/` between
+   folders). New note cards go into that folder of the Cards panel, which is made if it doesn't exist yet
+   (this needs a server with CreateCard's `Folder`). Empty: the top level. Notes imported before stay
+   where they are.
 
 The token is saved on the GM's server as a protected property. Nothing can read it back, not even the
 settings window; only the addon's requests to Trilium use it.
@@ -32,7 +36,7 @@ version.
 ## What players can see
 
 - A shared note card, through the server's normal permissions. Sharing gives Read, nothing more.
-- The Trilium address (game property `trilium_url`) and which notes have cards (`trilium_cards`: Trilium
+- The Trilium address (game property `trilium_url`), the folder for notes (`trilium_folder`) and which notes have cards (`trilium_cards`: Trilium
   ids to card ids). Not the token, and not unshared notes.
 - **Images of unshared notes** are game resources, which any player can read who knows the key. The
   Cards panel and resource lists don't show them, and the keys are Trilium ids. Keep that in mind for

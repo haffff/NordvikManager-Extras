@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 
-// The Trilium address and ETAPI token. The token goes to the server once, is stored there
-// as a protected property and is never read back: the field only says whether one is saved.
+// The Trilium address, ETAPI token and the Cards panel folder imported notes go in. The token
+// goes to the server once, is stored there as a protected property and is never read back:
+// the field only says whether one is saved.
 export default function Settings({ Api, game, call, ready }) {
   const [url, setUrl] = useState('');
   const [token, setToken] = useState('');
+  const [folder, setFolder] = useState('');
   const [tokenSaved, setTokenSaved] = useState(false);
   const [status, setStatus] = useState(null); // { ok, text }
   const [busy, setBusy] = useState(false);
@@ -13,6 +15,7 @@ export default function Settings({ Api, game, call, ready }) {
     if (!game?.gameId) return;
     const Global = Api.Properties.Global;
     Global.Get(game.gameId, 'trilium_url').then((p) => setUrl(p?.value ?? '')).catch(() => {});
+    Global.Get(game.gameId, 'trilium_folder').then((p) => setFolder(p?.value ?? '')).catch(() => {});
     Global.Get(game.gameId, 'trilium_token_set').then((p) => setTokenSaved(p?.value === 'true')).catch(() => {});
   }, [Api, game?.gameId]);
 
@@ -30,7 +33,7 @@ export default function Settings({ Api, game, call, ready }) {
   };
 
   const save = () => run(async () => {
-    const reply = await call('save_settings', 'saved', { url: url.trim(), token: token.trim() });
+    const reply = await call('save_settings', 'saved', { url: url.trim(), token: token.trim(), folder: folder.trim() });
     if (token.trim()) { setTokenSaved(true); setToken(''); }
     return reply;
   });
@@ -47,6 +50,10 @@ export default function Settings({ Api, game, call, ready }) {
         <input type="password" value={token} onChange={(e) => setToken(e.target.value)} autoComplete="off"
           placeholder={tokenSaved ? 'Saved. Type a new one to replace it.' : 'From Trilium: Options > ETAPI'} />
       </label>
+      <label className="tri-field">
+        <span>Folder for imported notes</span>
+        <input value={folder} onChange={(e) => setFolder(e.target.value)} placeholder="Top level of the Cards panel, e.g. Lore/Trilium" spellCheck={false} />
+      </label>
       <div className="tri-row">
         <button disabled={!ready || busy || !url.trim()} onClick={save}>Save</button>
         <button disabled={!ready || busy} onClick={() => run(() => call('test', 'test'))}>Test connection</button>
@@ -58,6 +65,8 @@ export default function Settings({ Api, game, call, ready }) {
         <p>A Trilium on this computer or your network (<code>localhost</code>, <code>192.168.x.x</code>) must be
           allowed by the server&apos;s admin in <b>Application Settings &gt; Server &gt; Local network access</b>,
           e.g. <code>localhost:8080</code>.</p>
+        <p>Imported notes go into the folder of the Cards panel named above (<code>/</code> between folders),
+          made if it doesn&apos;t exist yet. Notes imported before keep their place.</p>
         <p>Players can see the address (not the token) and which notes have cards.</p>
       </div>
     </div>

@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
   "name": "save_settings",
-  "description": "Saves the Trilium address and, when given, the ETAPI token (protected: nothing can read it back). Args: url, token, replyTo.",
+  "description": "Saves the Trilium address, the Cards panel folder for imported notes and, when given, the ETAPI token (protected: nothing can read it back). Args: url, token, folder, replyTo.",
   "hook": 0,
   "prefix": "trilium",
   "genericPermission": 0,
@@ -19,9 +19,9 @@
     {
       "Type": "RunScript",
       "Data": {
-        "Label": "Check the address",
+        "Label": "Check the address and the folder",
         "Include": "trilium_trilium.js",
-        "Script": "const base = baseUrl(vars.url);\nif (!base) return outcome(vars, { kind: 'saved', ok: false, error: 'The address must start with http:// or https://, e.g. http://localhost:8080' });\nconst hasToken = typeof vars.token === 'string' && vars.token.trim() !== '' ? 'yes' : 'no';\nreturn outcome(vars, { kind: 'saved', ok: true, message: 'Saved.' }, { base: base, hasToken: hasToken });"
+        "Script": "const base = baseUrl(vars.url);\nif (!base) return outcome(vars, { kind: 'saved', ok: false, error: 'The address must start with http:// or https://, e.g. http://localhost:8080' });\nconst hasToken = typeof vars.token === 'string' && vars.token.trim() !== '' ? 'yes' : 'no';\nconst folder = folderPath(vars.folder);\nif (folder === null) return outcome(vars, { kind: 'saved', ok: false, error: 'The folder can have at most 10 levels, each name at most 100 characters.' });\nreturn outcome(vars, { kind: 'saved', ok: true, message: 'Saved.' }, { base: base, hasToken: hasToken, folder: folder });"
       }
     },
     {
@@ -77,6 +77,15 @@
         "Of": "game",
         "PropertyName": "trilium_url",
         "PropertyValue": "%base%"
+      }
+    },
+    {
+      "Type": "SetProperty",
+      "Data": {
+        "Label": "Save the folder for notes",
+        "Of": "game",
+        "PropertyName": "trilium_folder",
+        "PropertyValue": "%folder%"
       }
     },
     {
