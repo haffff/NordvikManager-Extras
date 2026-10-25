@@ -63,6 +63,9 @@ include_sources/poll.mjs    the rules and the work, shared by the actions' RunSc
   starts again from the ballots.
 - **Settings:** game properties `poll_who_starts` (`gm` | `everyone`), `poll_folder`; `poll_latest` is the
   current poll.
+- **Chat:** the `chat` action (hook Chat Command) has `"hookFilter": "poll, vote"`, so only those two
+  commands come to it and every other unknown `/command` still gets "Wrong command". A server without
+  hook filters ignores the field and gives the action every unknown command.
 - **Folders** need a server whose CreateCard step takes `Folder`; an older one puts poll cards at the top
   level of the Cards panel.
 

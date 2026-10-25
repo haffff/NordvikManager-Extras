@@ -3,6 +3,7 @@
   "name": "chat",
   "description": "Chat commands: /vote <pick> votes in the current poll; /poll Question? | A | B starts one (switches --secret --hidden --multi --change); /poll close closes the current one; /poll shows it.",
   "hook": 19,
+  "hookFilter": "poll, vote",
   "prefix": "poll",
   "genericPermission": 0,
   "gmPermission": 31,
