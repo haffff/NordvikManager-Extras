@@ -28,7 +28,7 @@ pnpm test                  every *.test.mjs in the repository
 pnpm run pack trilium      packed/trilium.zip
 ```
 
-You can install `packed/<addon>.zip` by hand in **Addons → Install from file**.
+You can install `packed/<addon>.zip` by hand in a game: **Addons → Addons → Install**. To install a new build of the same version, uninstall it first (**Installed** tab).
 
 ## Releasing
 

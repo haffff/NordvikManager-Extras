@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/card.json",
+  "name": "Trilium",
+  "description": "The GM's Trilium window: settings and note search.",
+  "key": "trilium_gm",
+  "mainResource": "trilium_index.html",
+  "additionalResources": [
+    "trilium_trilium-app.css",
+    "trilium_trilium-app.js"
+  ],
+  "properties": [
+    {
+      "name": "app_styles",
+      "value": "true"
+    }
+  ]
+}

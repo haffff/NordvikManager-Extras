@@ -1,0 +1,113 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "create_menus",
+  "description": "Adds the Trilium menus for each player as the game loads; the GM's ones only for GMs.",
+  "hook": 5,
+  "prefix": "trilium",
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Search notes (Addons menu)",
+        "Name": "trilium_search",
+        "UiName": "Search notes",
+        "Action": "trilium/open_search",
+        "Location": "addons",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaSearch",
+        "SubMenuId": "trilium_menu",
+        "SubMenuName": "Trilium"
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Settings (Addons menu)",
+        "Name": "trilium_settings",
+        "UiName": "Settings",
+        "Action": "trilium/open_settings",
+        "Location": "addons",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaCog",
+        "SubMenuId": "trilium_menu",
+        "SubMenuName": "Trilium"
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Show lore (token menu)",
+        "Name": "trilium_show_lore",
+        "UiName": "Show lore",
+        "Action": "trilium/show_lore",
+        "Location": "battlemap_element",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": false,
+        "Icon": "FaBook"
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Pin a note (token menu)",
+        "Name": "trilium_pin",
+        "UiName": "Pin Trilium note",
+        "Action": "trilium/pin_note",
+        "Location": "battlemap_element",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaThumbtack",
+        "SubMenuId": "trilium_token_menu",
+        "SubMenuName": "Trilium"
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Refresh (Cards panel)",
+        "Name": "trilium_refresh",
+        "UiName": "Refresh from Trilium",
+        "Action": "trilium/refresh",
+        "Location": "cards_item",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaSync",
+        "SubMenuId": "trilium_card_menu",
+        "SubMenuName": "Trilium"
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Share (Cards panel)",
+        "Name": "trilium_share",
+        "UiName": "Share with players",
+        "Action": "trilium/share",
+        "Location": "cards_item",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaShareSquare",
+        "SubMenuId": "trilium_card_menu",
+        "SubMenuName": "Trilium"
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Take back (Cards panel)",
+        "Name": "trilium_unshare",
+        "UiName": "Take back from players",
+        "Action": "trilium/unshare",
+        "Location": "cards_item",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaEyeSlash",
+        "SubMenuId": "trilium_card_menu",
+        "SubMenuName": "Trilium"
+      }
+    }
+  ]
+}

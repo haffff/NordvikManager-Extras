@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/addon.json",
+  "key": "trilium",
+  "name": "Trilium",
+  "description": "Search your Trilium notes from the game, pin them to tokens and share lore with players when the story gets there. Needs TriliumNext with an ETAPI token; a Trilium on your computer or network must be allowed in Application Settings > Server > Local network access.",
+  "version": "0.1.4",
+  "author": "haffff",
+  "license": "AGPL-3.0-only",
+  "repositoryUrl": "https://github.com/haffff/NordvikManager-Extras",
+  "categories": [],
+  "dependencies": []
+}

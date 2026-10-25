@@ -28,6 +28,8 @@ them.
 Obsidian (obsidian/) bundles into Resources/obsidian-app.js:
 - markdown-it, (C) Vitaly Puzrin, Alex Kocharin, under the MIT License, with its dependencies
   entities (BSD 2-Clause), linkify-it, mdurl, uc.micro and punycode.js (MIT);
+  
+Trilium (trilium/) bundles into Resources/trilium-app.js:
 - DOMPurify, (C) Cure53 and other contributors, under the Apache License 2.0 or the Mozilla
   Public License 2.0 (https://github.com/cure53/DOMPurify/blob/main/LICENSE);
 - React and React DOM, (C) Meta Platforms, Inc. and affiliates, under the MIT License.
