@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/card.json",
+  "name": "Poll settings",
+  "description": "The GM's poll settings: who may start polls and where new polls go in the Cards panel.",
+  "key": "poll_gm",
+  "mainResource": "poll_index.html",
+  "additionalResources": [
+    "poll_poll-app.css",
+    "poll_poll-app.js"
+  ],
+  "properties": [
+    {
+      "name": "app_styles",
+      "value": "true"
+    }
+  ]
+}

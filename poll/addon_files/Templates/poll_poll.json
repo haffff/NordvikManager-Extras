@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/card.json",
+  "name": "Poll",
+  "description": "A poll's card: it holds the ballots and is never shared. Opened, it shows the poll; what players see of it is on the game (property poll_<card id>).",
+  "key": "poll_poll",
+  "hidden": true,
+  "mainResource": "poll_index.html",
+  "additionalResources": [
+    "poll_poll-app.css",
+    "poll_poll-app.js"
+  ],
+  "properties": [
+    {
+      "name": "pollId",
+      "value": ""
+    },
+    {
+      "name": "app_styles",
+      "value": "true"
+    }
+  ]
+}

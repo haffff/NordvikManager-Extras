@@ -1,0 +1,59 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "start",
+  "description": "Starts a poll: a private card for its ballots, and what everyone may see on the game; announced in chat and shown to everyone. Args: question, options (JSON list or one per line), multi, secret, hideResults, allowChange, replyTo.",
+  "hook": 0,
+  "prefix": "poll",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Check and start the poll",
+        "Include": "poll_poll.js",
+        "Script": "return startPoll(game, vars);"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Tell whoever asked",
+        "Condition": "'%hasReply%' = 'yes'",
+        "Then": [
+          {
+            "Type": "RunClientCommand",
+            "Data": {
+              "Label": "Answer the window that asked",
+              "Panel": "%replyTo%",
+              "Command": "Reply",
+              "Player": "%playerId%",
+              "Data": "%reply%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Anything to say?",
+              "Condition": "'%hasNotice%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Whisper it",
+                    "Template": "Text",
+                    "Title": "Poll",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

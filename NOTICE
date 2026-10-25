@@ -25,6 +25,7 @@ Under section 7(b), the following author attributions must be preserved:
 Third-party components bundled with this program keep their own licenses, as stated next to
 them.
 
+Poll (poll/) bundles into Resources/poll-app.js:
 Obsidian (obsidian/) bundles into Resources/obsidian-app.js:
 - markdown-it, (C) Vitaly Puzrin, Alex Kocharin, under the MIT License, with its dependencies
   entities (BSD 2-Clause), linkify-it, mdurl, uc.micro and punycode.js (MIT);
