@@ -2,7 +2,9 @@
    Always give a fallback: the page also runs in `pnpm dev`. */
 body {
   margin: 0;
-  background: var(--nordvik-surface, #1e1e1e);
+  /* Opaque: a theme's --nordvik-surface may be see-through (it sits on the dock in the
+     app), and under it a card's frame is white, so the page would turn grey. */
+  background: var(--nordvik-background-color, #1e1e1e);
   color: var(--nordvik-text-color, #eee);
   font-family: var(--nordvik-font, system-ui, sans-serif);
 }
