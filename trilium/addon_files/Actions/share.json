@@ -1,0 +1,131 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "share",
+  "description": "Lets every player read a Trilium Note card, shows it to them and says so in chat. Args (from the viewer): noteCardId, replyTo.",
+  "hook": 0,
+  "prefix": "trilium",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "Only GMs",
+        "EntityId": "%gameId%",
+        "Permission": "Edit",
+        "StopIfDenied": true
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Which note",
+        "Include": "trilium_trilium.js",
+        "Script": "const target = String(vars.noteCardId || vars.cardId || '');\nconst noteId = /^[0-9a-fA-F-]{36}$/.test(target) ? game.getProperty(target, 'trilium_note_id', '') : '';\nif (!isNoteId(noteId)) return outcome(vars, { kind: 'shared', ok: false, error: \"That card isn't a Trilium note.\" });\nconst title = game.getProperty(target, 'title', '') || 'A note';\nreturn outcome(vars, { kind: 'shared', ok: true, cardId: target, shared: true, message: 'Shared \"' + title + '\" with the players.' },\n  { target: target, title: title });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Stop if that failed",
+        "Condition": "'%failed%' = 'yes'",
+        "Then": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Tell the GM",
+              "Condition": "'%hasReply%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "RunClientCommand",
+                  "Data": {
+                    "Label": "Answer the window that asked",
+                    "Panel": "%replyTo%",
+                    "Command": "Reply",
+                    "Player": "%playerId%",
+                    "Data": "%reply%"
+                  }
+                }
+              ],
+              "Else": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Or whisper it",
+                    "Template": "Text",
+                    "Title": "Trilium",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "Exit",
+            "Data": {
+              "Label": "Stop"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "SetPermission",
+      "Data": {
+        "Label": "Everyone may read it",
+        "EntityId": "%target%",
+        "Permission": "Read"
+      }
+    },
+    {
+      "Type": "ShowView",
+      "Data": {
+        "Label": "Show it to everyone",
+        "ViewKey": "trilium_viewer",
+        "Player": "",
+        "Data": "{\"view\":\"viewer\",\"cardId\":\"%target%\"}"
+      }
+    },
+    {
+      "Type": "SendChat",
+      "Data": {
+        "Label": "Say so",
+        "Template": "Text",
+        "Title": "📜 %title%",
+        "Message": "The GM shared a note. Open it from the Cards panel."
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Tell the GM",
+        "Condition": "'%hasReply%' = 'yes'",
+        "Then": [
+          {
+            "Type": "RunClientCommand",
+            "Data": {
+              "Label": "Answer the window that asked",
+              "Panel": "%replyTo%",
+              "Command": "Reply",
+              "Player": "%playerId%",
+              "Data": "%reply%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "SendChat",
+            "Data": {
+              "Label": "Or whisper it",
+              "Template": "Text",
+              "Title": "Trilium",
+              "Message": "%notice%",
+              "Player": "%playerId%"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

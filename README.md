@@ -7,6 +7,7 @@ version and release, and installs on its own; none of them needs a game system.
 |---|---|---|
 | Trilium: search your Trilium notes from the game, pin them to tokens and share lore with players | `trilium/` | `trilium` |
 | Poll: let the table vote, in a window that pops up for everyone or with `/vote` in chat; secret ballots, hidden results, multiple choice | `poll/` | `poll` |
+| Obsidian: search your Obsidian vault from the game (through the Local REST API plugin), pin notes to tokens and share lore with players | `obsidian/` | `obsidian` |
 
 ## Layout of an addon
 
@@ -28,7 +29,7 @@ pnpm test                  every *.test.mjs in the repository
 pnpm run pack trilium      packed/trilium.zip
 ```
 
-You can install `packed/<addon>.zip` by hand in **Addons → Install from file**.
+You can install `packed/<addon>.zip` by hand in a game: **Addons → Addons → Install**. To install a new build of the same version, uninstall it first (**Installed** tab).
 
 ## Releasing
 

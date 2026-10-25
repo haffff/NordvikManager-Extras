@@ -1,0 +1,151 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "save_settings",
+  "description": "Saves the Trilium address, the Cards panel folder for imported notes and, when given, the ETAPI token (protected: nothing can read it back). Args: url, token, folder, replyTo.",
+  "hook": 0,
+  "prefix": "trilium",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "Only GMs",
+        "EntityId": "%gameId%",
+        "Permission": "Edit",
+        "StopIfDenied": true
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Check the address and the folder",
+        "Include": "trilium_trilium.js",
+        "Script": "const base = baseUrl(vars.url);\nif (!base) return outcome(vars, { kind: 'saved', ok: false, error: 'The address must start with http:// or https://, e.g. http://localhost:8080' });\nconst hasToken = typeof vars.token === 'string' && vars.token.trim() !== '' ? 'yes' : 'no';\nconst folder = folderPath(vars.folder);\nif (folder === null) return outcome(vars, { kind: 'saved', ok: false, error: 'The folder can have at most 10 levels, each name at most 100 characters.' });\nreturn outcome(vars, { kind: 'saved', ok: true, message: 'Saved.' }, { base: base, hasToken: hasToken, folder: folder });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Stop if that failed",
+        "Condition": "'%failed%' = 'yes'",
+        "Then": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Tell the GM",
+              "Condition": "'%hasReply%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "RunClientCommand",
+                  "Data": {
+                    "Label": "Answer the window that asked",
+                    "Panel": "%replyTo%",
+                    "Command": "Reply",
+                    "Player": "%playerId%",
+                    "Data": "%reply%"
+                  }
+                }
+              ],
+              "Else": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Or whisper it",
+                    "Template": "Text",
+                    "Title": "Trilium",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "Exit",
+            "Data": {
+              "Label": "Stop"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "SetProperty",
+      "Data": {
+        "Label": "Save the address",
+        "Of": "game",
+        "PropertyName": "trilium_url",
+        "PropertyValue": "%base%"
+      }
+    },
+    {
+      "Type": "SetProperty",
+      "Data": {
+        "Label": "Save the folder for notes",
+        "Of": "game",
+        "PropertyName": "trilium_folder",
+        "PropertyValue": "%folder%"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "A new token?",
+        "Condition": "'%hasToken%' = 'yes'",
+        "Then": [
+          {
+            "Type": "SetProperty",
+            "Data": {
+              "Label": "Save the token, protected",
+              "Of": "game",
+              "PropertyName": "trilium_token",
+              "PropertyValue": "%token%",
+              "Protected": true
+            }
+          },
+          {
+            "Type": "SetProperty",
+            "Data": {
+              "Label": "Remember that there is one",
+              "Of": "game",
+              "PropertyName": "trilium_token_set",
+              "PropertyValue": "true"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Tell the GM",
+        "Condition": "'%hasReply%' = 'yes'",
+        "Then": [
+          {
+            "Type": "RunClientCommand",
+            "Data": {
+              "Label": "Answer the window that asked",
+              "Panel": "%replyTo%",
+              "Command": "Reply",
+              "Player": "%playerId%",
+              "Data": "%reply%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "SendChat",
+            "Data": {
+              "Label": "Or whisper it",
+              "Template": "Text",
+              "Title": "Trilium",
+              "Message": "%notice%",
+              "Player": "%playerId%"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

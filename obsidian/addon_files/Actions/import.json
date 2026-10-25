@@ -1,0 +1,337 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "import",
+  "description": "Imports an Obsidian note (its text and images) into an Obsidian Note card, or updates the note's card. Args: notePath, replyTo, open ('yes' to show it after).",
+  "hook": 0,
+  "prefix": "obsidian",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "Only GMs",
+        "EntityId": "%gameId%",
+        "Permission": "Edit",
+        "StopIfDenied": true
+      }
+    },
+    {
+      "Type": "GetPropertyValue",
+      "Data": {
+        "Label": "The Obsidian address",
+        "Of": "game",
+        "PropertyName": "obsidian_url",
+        "Output": "url",
+        "DefaultValue": ""
+      }
+    },
+    {
+      "Type": "GetPropertyValue",
+      "Data": {
+        "Label": "The folder for notes",
+        "Of": "game",
+        "PropertyName": "obsidian_folder",
+        "Output": "folder",
+        "DefaultValue": ""
+      }
+    },
+    {
+      "Type": "GetPropertyValue",
+      "Data": {
+        "Label": "The attachments folder",
+        "Of": "game",
+        "PropertyName": "obsidian_attachments",
+        "Output": "attachments",
+        "DefaultValue": ""
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "The note URL",
+        "Include": "obsidian_obsidian.js",
+        "Script": "const base = baseUrl(vars.url);\nif (!base) return outcome(vars, { kind: 'imported', ok: false, error: 'Set the Obsidian address in Settings first.' });\nif (!isNotePath(vars.notePath)) return outcome(vars, { kind: 'imported', ok: false, error: 'That is not a note of the vault.' });\nreturn outcome(vars, { kind: 'imported', ok: true }, { base: base, noteUrl: vaultUrl(base, vars.notePath), openAfter: vars.open === 'yes' ? 'yes' : 'no' });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Stop if that failed",
+        "Condition": "'%failed%' = 'yes'",
+        "Then": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Tell the GM",
+              "Condition": "'%hasReply%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "RunClientCommand",
+                  "Data": {
+                    "Label": "Answer the window that asked",
+                    "Panel": "%replyTo%",
+                    "Command": "Reply",
+                    "Player": "%playerId%",
+                    "Data": "%reply%"
+                  }
+                }
+              ],
+              "Else": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Or whisper it",
+                    "Template": "Text",
+                    "Title": "Obsidian",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "Exit",
+            "Data": {
+              "Label": "Stop"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "SendRequest",
+      "Data": {
+        "Label": "The note",
+        "TargetUrl": "%noteUrl%",
+        "HttpMethod": "GET",
+        "BearerTokenPropertyName": "obsidian_key",
+        "Output": "content"
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Prepare the card",
+        "Include": "obsidian_obsidian.js",
+        "Script": "const r = readResponse(vars.content, 'that note');\nif (!r.ok) return outcome(vars, { kind: 'imported', ok: false, notePath: vars.notePath, error: r.error });\nconst prepared = prepareNote(rawBody(vars.content), vars.notePath, vars.attachments, vars.base);\nlet existing = indexedCard(game.getProperty(vars.gameId, 'obsidian_cards', '{}'), vars.notePath);\nif (existing && !game.find('cards', { id: existing, first: true })) existing = '';\nconst template = game.find('cards', { name: 'Obsidian Note', includeTemplates: true }).filter(function (c) { return c.isTemplate; })[0];\nif (!existing && !template) return outcome(vars, { kind: 'imported', ok: false, error: 'The Obsidian Note template is missing: reinstall the addon.' });\nreturn outcome(vars, { kind: 'imported', ok: true }, { title: titleOf(vars.notePath), markdown: prepared.markdown,\n  downloads: prepared.downloads, existingCardId: existing, hasCard: existing ? 'yes' : 'no', templateId: template ? template.id : '' });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Stop if that failed",
+        "Condition": "'%failed%' = 'yes'",
+        "Then": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Tell the GM",
+              "Condition": "'%hasReply%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "RunClientCommand",
+                  "Data": {
+                    "Label": "Answer the window that asked",
+                    "Panel": "%replyTo%",
+                    "Command": "Reply",
+                    "Player": "%playerId%",
+                    "Data": "%reply%"
+                  }
+                }
+              ],
+              "Else": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Or whisper it",
+                    "Template": "Text",
+                    "Title": "Obsidian",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "Exit",
+            "Data": {
+              "Label": "Stop"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "ForEach",
+      "Data": {
+        "Label": "Download its images",
+        "Collection": "downloads",
+        "ItemName": "img",
+        "Do": [
+          {
+            "Type": "DownloadResource",
+            "Data": {
+              "Label": "From the first place",
+              "TargetUrl": "%img.urls[0]%",
+              "Key": "%img.key%",
+              "Name": "%img.name%",
+              "BearerTokenPropertyName": "obsidian_key",
+              "Output": "downloaded"
+            }
+          },
+          {
+            "Type": "RunScript",
+            "Data": {
+              "Label": "Found it?",
+              "Script": "const d = vars.downloaded || {};\nconst ok = d.Success === true || d.success === true;\nconst urls = vars.img && Array.isArray(vars.img.urls) ? vars.img.urls : [];\nreturn { tryNext: !ok && urls.length > 1 ? 'yes' : 'no' };"
+            }
+          },
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Else the next place",
+              "Condition": "'%tryNext%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "DownloadResource",
+                  "Data": {
+                    "Label": "Try there",
+                    "TargetUrl": "%img.urls[1]%",
+                    "Key": "%img.key%",
+                    "Name": "%img.name%",
+                    "BearerTokenPropertyName": "obsidian_key",
+                    "Output": "downloaded"
+                  }
+                },
+                {
+                  "Type": "RunScript",
+                  "Data": {
+                    "Label": "Found it there?",
+                    "Script": "const d = vars.downloaded || {};\nconst ok = d.Success === true || d.success === true;\nconst urls = vars.img && Array.isArray(vars.img.urls) ? vars.img.urls : [];\nreturn { tryNext: !ok && urls.length > 2 ? 'yes' : 'no' };"
+                  }
+                },
+                {
+                  "Type": "If",
+                  "Data": {
+                    "Label": "Else the next place",
+                    "Condition": "'%tryNext%' = 'yes'",
+                    "Then": [
+                      {
+                        "Type": "DownloadResource",
+                        "Data": {
+                          "Label": "Try there",
+                          "TargetUrl": "%img.urls[2]%",
+                          "Key": "%img.key%",
+                          "Name": "%img.name%",
+                          "BearerTokenPropertyName": "obsidian_key",
+                          "Output": "downloaded"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "A card for it yet?",
+        "Condition": "'%hasCard%' = 'yes'",
+        "Then": [
+          {
+            "Type": "SetVariable",
+            "Data": {
+              "Label": "Its card",
+              "Name": "noteCardId",
+              "Value": "%existingCardId%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "CreateCard",
+            "Data": {
+              "Label": "A new card",
+              "Name": "%title%",
+              "TemplateId": "%templateId%",
+              "Output": "noteCardId",
+              "Folder": "%folder%"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "SetProperties",
+      "Data": {
+        "Label": "Fill it in",
+        "ParentId": "%noteCardId%",
+        "Properties": "obsidian_path=%notePath%\ntitle=%title%\nmarkdown=%markdown%"
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Remember it",
+        "Include": "obsidian_obsidian.js",
+        "Script": "game.setProperty(vars.gameId, 'obsidian_cards', withIndexed(game.getProperty(vars.gameId, 'obsidian_cards', '{}'), vars.notePath, vars.noteCardId));\nreturn outcome(vars, { kind: 'imported', ok: true, notePath: vars.notePath, cardId: vars.noteCardId, title: vars.title,\n  message: 'Imported \"' + vars.title + '\" from Obsidian.' });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Tell the GM",
+        "Condition": "'%hasReply%' = 'yes'",
+        "Then": [
+          {
+            "Type": "RunClientCommand",
+            "Data": {
+              "Label": "Answer the window that asked",
+              "Panel": "%replyTo%",
+              "Command": "Reply",
+              "Player": "%playerId%",
+              "Data": "%reply%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "SendChat",
+            "Data": {
+              "Label": "Or whisper it",
+              "Template": "Text",
+              "Title": "Obsidian",
+              "Message": "%notice%",
+              "Player": "%playerId%"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Show it?",
+        "Condition": "'%openAfter%' = 'yes'",
+        "Then": [
+          {
+            "Type": "ShowView",
+            "Data": {
+              "Label": "Show the note",
+              "ViewKey": "obsidian_viewer",
+              "Player": "%playerId%",
+              "Data": "{\"view\":\"viewer\",\"cardId\":\"%noteCardId%\"}"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

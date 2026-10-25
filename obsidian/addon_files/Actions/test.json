@@ -1,0 +1,133 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "test",
+  "description": "Asks the Local REST API plugin whether it accepts the saved key. Args: replyTo.",
+  "hook": 0,
+  "prefix": "obsidian",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "Only GMs",
+        "EntityId": "%gameId%",
+        "Permission": "Edit",
+        "StopIfDenied": true
+      }
+    },
+    {
+      "Type": "GetPropertyValue",
+      "Data": {
+        "Label": "The Obsidian address",
+        "Of": "game",
+        "PropertyName": "obsidian_url",
+        "Output": "url",
+        "DefaultValue": ""
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "The address to ask",
+        "Include": "obsidian_obsidian.js",
+        "Script": "const base = baseUrl(vars.url);\nif (!base) return outcome(vars, { kind: 'test', ok: false, error: 'Save the Obsidian address first.' });\nreturn outcome(vars, { kind: 'test', ok: true }, { statusUrl: base + '/' });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Stop if that failed",
+        "Condition": "'%failed%' = 'yes'",
+        "Then": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Tell the GM",
+              "Condition": "'%hasReply%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "RunClientCommand",
+                  "Data": {
+                    "Label": "Answer the window that asked",
+                    "Panel": "%replyTo%",
+                    "Command": "Reply",
+                    "Player": "%playerId%",
+                    "Data": "%reply%"
+                  }
+                }
+              ],
+              "Else": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Or whisper it",
+                    "Template": "Text",
+                    "Title": "Obsidian",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "Exit",
+            "Data": {
+              "Label": "Stop"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "SendRequest",
+      "Data": {
+        "Label": "Ask Obsidian",
+        "TargetUrl": "%statusUrl%",
+        "HttpMethod": "GET",
+        "BearerTokenPropertyName": "obsidian_key",
+        "Output": "status"
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "What it said",
+        "Include": "obsidian_obsidian.js",
+        "Script": "const r = readResponse(vars.status, 'its status');\nif (!r.ok) return outcome(vars, { kind: 'test', ok: false, error: r.error });\nconst info = statusInfo(r.body);\nif (!info.authenticated) return outcome(vars, { kind: 'test', ok: false, error: 'Obsidian answered, but refused the API key. Copy it again from Settings -> Local REST API and save it here.' });\nreturn outcome(vars, { kind: 'test', ok: true, version: info.obsidian, message: 'Connected to Obsidian ' + info.obsidian + ' (Local REST API ' + info.plugin + ').' });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Tell the GM",
+        "Condition": "'%hasReply%' = 'yes'",
+        "Then": [
+          {
+            "Type": "RunClientCommand",
+            "Data": {
+              "Label": "Answer the window that asked",
+              "Panel": "%replyTo%",
+              "Command": "Reply",
+              "Player": "%playerId%",
+              "Data": "%reply%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "SendChat",
+            "Data": {
+              "Label": "Or whisper it",
+              "Template": "Text",
+              "Title": "Obsidian",
+              "Message": "%notice%",
+              "Player": "%playerId%"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

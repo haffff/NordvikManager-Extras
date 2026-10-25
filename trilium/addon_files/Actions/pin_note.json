@@ -1,0 +1,37 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "pin_note",
+  "description": "Opens the note search to pin a note to the token that was right-clicked.",
+  "hook": 0,
+  "prefix": "trilium",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "Only GMs",
+        "EntityId": "%gameId%",
+        "Permission": "Edit",
+        "StopIfDenied": true
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "The token",
+        "Include": "trilium_trilium.js",
+        "Script": "return { pinTo: /^[0-9a-fA-F-]{36}$/.test(String(vars.elementId)) ? vars.elementId : '' };"
+      }
+    },
+    {
+      "Type": "ShowView",
+      "Data": {
+        "Label": "Open search for it",
+        "ViewKey": "trilium_gm",
+        "Player": "%playerId%",
+        "Data": "{\"view\":\"search\",\"pinTo\":\"%pinTo%\"}"
+      }
+    }
+  ]
+}

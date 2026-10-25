@@ -10,6 +10,7 @@
     "test": "node scripts/test.mjs"
   },
   "devDependencies": {
-    "archiver": "^7.0.1"
+    "archiver": "^7.0.1",
+    "markdown-it": "^14.3.3"
   }
 }
