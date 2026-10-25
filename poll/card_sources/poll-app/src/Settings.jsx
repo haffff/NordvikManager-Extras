@@ -55,9 +55,9 @@ export default function Settings({ Api, game, call, ready }) {
         <p>In chat: <code>/poll Question? | first | second</code> starts a poll (add <code>--secret</code>,
           {' '}<code>--hidden</code>, <code>--multi</code> or <code>--change</code>), <code>/vote 2</code> votes in the
           current one, <code>/poll close</code> closes it.</p>
-        <p>Each poll is a card in the folder above (<code>/</code> between folders; empty for the top level), shared with
-          everyone, plus a private card with its ballots. A secret ballot hides who picked what from the players; the
-          ballots are still on the GM&apos;s server.</p>
+        <p>Each poll is a card in the folder above (<code>/</code> between folders; empty for the top level). It holds
+          the ballots and is never shared: players see the poll in its window. A secret ballot hides who picked what from
+          the players (and its totals until it closes); the ballots are still on the GM&apos;s server.</p>
         <p>Players get the <b>New poll</b> menu item the next time they load the game.</p>
       </div>
     </div>

@@ -15,7 +15,10 @@ Let the table vote. A poll window pops up for everyone with a button per option,
 
 The switches, per poll:
 
-- **Secret ballot:** nobody sees who voted for what, only the totals (and who has voted).
+- **Secret ballot:** nobody sees who voted for what: only who has voted, and the totals once the poll
+  closes. A secret poll always hides its results until then, as live totals next to the list of voters
+  would show each new voter's pick. The totals can still tell on their own: with one voter, or when
+  everyone picks the same.
 - **Hide results until closed:** the totals appear when the poll closes, so early votes don't sway later ones.
 - **Multiple choice:** each voter may pick several options.
 - **Allow changing votes:** voters can change their pick until the poll closes. Without it, a vote is final.
@@ -26,7 +29,7 @@ Players get the **New poll** menu item (when everyone may start polls) the next 
 ## What players can see
 
 - **The poll:** its question, options, switches, who started it, who has voted and the totals while the
-  poll shows them. It is the game property `poll_<card id>`, which every player can read.
+  poll shows them (never before it closes for a secret or hidden poll). It is the game property `poll_<card id>`, which every player can read.
 - **Not the ballots.** Each poll is a card (in the folder from the settings, e.g. `Polls`) that holds one
   ballot per voter and is never shared. The GM can open it, and the ballots are on the GM's server, so a
   secret ballot is secret from the players, not from whoever runs the server.

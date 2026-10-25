@@ -25,7 +25,7 @@ export default function NewPoll({ Api, call, ready }) {
         question: question.trim(),
         options: JSON.stringify(filled),
         secret: String(flags.secret),
-        hideResults: String(flags.hideResults),
+        hideResults: String(flags.hideResults || flags.secret),
         multi: String(flags.multi),
         allowChange: String(flags.allowChange),
       });
@@ -41,9 +41,11 @@ export default function NewPoll({ Api, call, ready }) {
     if (e.key === 'Enter' && i === options.length - 1 && options[i].trim()) addOption();
   };
 
-  const flag = (name, label, help) => (
+  // locked: ticked and fixed (a secret ballot always hides its totals until it closes).
+  const flag = (name, label, help, locked = false) => (
     <label className="poll-check">
-      <input type="checkbox" checked={flags[name]} onChange={(e) => setFlags((f) => ({ ...f, [name]: e.target.checked }))} />
+      <input type="checkbox" checked={flags[name] || locked} disabled={locked}
+        onChange={(e) => setFlags((f) => ({ ...f, [name]: e.target.checked }))} />
       <span>{label} <span className="poll-muted poll-small">{help}</span></span>
     </label>
   );
@@ -67,8 +69,10 @@ export default function NewPoll({ Api, call, ready }) {
         {options.length < MAX_OPTIONS && <div><button onClick={addOption}>Add option</button></div>}
       </div>
       <div className="poll-field">
-        {flag('secret', 'Secret ballot', 'Nobody sees who voted for what, only the totals.')}
-        {flag('hideResults', 'Hide results until closed', 'So early votes don’t sway the rest.')}
+        {flag('secret', 'Secret ballot', 'Nobody sees who voted for what, only who has voted and, at the end, the totals.')}
+        {flag('hideResults', 'Hide results until closed',
+          flags.secret ? 'A secret ballot always does: live totals would show each new voter’s pick.' : 'So early votes don’t sway the rest.',
+          flags.secret)}
         {flag('multi', 'Multiple choice', 'Each voter may pick several options.')}
         {flag('allowChange', 'Allow changing votes', 'Until the poll closes.')}
       </div>

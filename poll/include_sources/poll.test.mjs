@@ -88,7 +88,7 @@ test('folderPath tidies the folder, empty for the top level, null when too deep 
 test('validatePoll trims, takes options as a list, lines or JSON, and reads the switches', () => {
   const r = validatePoll({ question: '  Where next? ', options: ' Mill \n\nCave\n', multi: 'true', secret: true, hideResults: 'False' });
   assert.equal(r.ok, true);
-  assert.deepEqual(r.poll, { question: 'Where next?', options: ['Mill', 'Cave'], multi: true, secret: true, hideResults: false, allowChange: false });
+  assert.deepEqual(r.poll, { question: 'Where next?', options: ['Mill', 'Cave'], multi: true, secret: true, hideResults: true, allowChange: false });
   assert.deepEqual(validatePoll({ question: 'Q', options: '["A","B"]' }).poll.options, ['A', 'B']);
   assert.deepEqual(validatePoll({ question: 'Q', options: ['A', 'B'] }).poll.options, ['A', 'B']);
 });
@@ -186,7 +186,8 @@ test('startPoll makes a private card in the Polls folder, puts what all may see 
   assert.equal(config.question, 'Where next?');
   assert.equal(config.secret, true);
   assert.equal(config.createdBy, GM);
-  assert.deepEqual(stateOf(game, pollId), { status: 'open', voted: [], results: { counts: [0, 0], total: 0 } });
+  assert.equal(config.hideResults, true, 'a secret poll hides its totals until it closes');
+  assert.deepEqual(stateOf(game, pollId), { status: 'open', voted: [] });
   assert.equal(game.getProperty(GAME, 'poll_latest'), pollId);
 
   assert.ok(!game.steps.some((s) => s.type === 'SetPermission'), 'the card is never shared');
@@ -254,10 +255,12 @@ test('castVote stores the ballot privately, and the poll shows who voted and the
   assert.deepEqual(stateOf(game, id), { status: 'open', voted: ['Ana'], results: { counts: [0, 1, 0], total: 1, names: [[], ['Ana'], []] } });
 });
 
-test('castVote: a secret poll shows totals without names; a hidden one no totals until it closes', () => {
+test('castVote: secret and hidden polls show no totals until they close (live totals next to who voted would give picks away)', () => {
   const secret = fakeGame();
   const s = started(secret, { secret: 'true' });
   castVote(secret, asAna({ pollId: s, choices: '1' }));
+  assert.deepEqual(stateOf(secret, s), { status: 'open', voted: ['Ana'] });
+  closePoll(secret, asGm({ pollId: s }));
   assert.deepEqual(stateOf(secret, s).results, { counts: [1, 0, 0], total: 1 });
 
   const hidden = fakeGame();

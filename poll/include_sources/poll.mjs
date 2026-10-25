@@ -83,7 +83,9 @@ export function validatePoll(input) {
       options: options,
       multi: truthy(input.multi),
       secret: truthy(input.secret),
-      hideResults: truthy(input.hideResults),
+      // A secret poll keeps its totals until it closes: live totals next to the list of who
+      // has voted would show each new voter's pick.
+      hideResults: truthy(input.hideResults) || truthy(input.secret),
       allowChange: truthy(input.allowChange),
     },
   };
