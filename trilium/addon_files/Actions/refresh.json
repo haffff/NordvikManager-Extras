@@ -1,0 +1,91 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "refresh",
+  "description": "Imports a Trilium Note card's note again (Cards panel).",
+  "hook": 0,
+  "prefix": "trilium",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "Only GMs",
+        "EntityId": "%gameId%",
+        "Permission": "Edit",
+        "StopIfDenied": true
+      }
+    },
+    {
+      "Type": "GetPropertyValue",
+      "Data": {
+        "Label": "Its note",
+        "ParentId": "%cardId%",
+        "PropertyName": "trilium_note_id",
+        "Output": "noteId",
+        "DefaultValue": ""
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "A Trilium note?",
+        "Include": "trilium_trilium.js",
+        "Script": "return outcome(vars, isNoteId(vars.noteId) ? { kind: 'imported', ok: true } : { kind: 'imported', ok: false, error: \"This card isn't a Trilium note.\" });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Stop if that failed",
+        "Condition": "'%failed%' = 'yes'",
+        "Then": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Tell the GM",
+              "Condition": "'%hasReply%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "RunClientCommand",
+                  "Data": {
+                    "Label": "Answer the window that asked",
+                    "Panel": "%replyTo%",
+                    "Command": "Reply",
+                    "Player": "%playerId%",
+                    "Data": "%reply%"
+                  }
+                }
+              ],
+              "Else": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Or whisper it",
+                    "Template": "Text",
+                    "Title": "Trilium",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "Exit",
+            "Data": {
+              "Label": "Stop"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "ExecuteAction",
+      "Data": {
+        "Label": "Import it again",
+        "Value": "trilium/import"
+      }
+    }
+  ]
+}

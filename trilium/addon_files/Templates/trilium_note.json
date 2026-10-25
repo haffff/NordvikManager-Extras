@@ -1,0 +1,34 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/card.json",
+  "name": "Trilium Note",
+  "description": "A note imported from Trilium: its text and images as they were at the last import.",
+  "key": "trilium_note",
+  "hidden": true,
+  "mainResource": "trilium_index.html",
+  "additionalResources": [
+    "trilium_trilium-app.css",
+    "trilium_trilium-app.js"
+  ],
+  "properties": [
+    {
+      "name": "trilium_note_id",
+      "value": ""
+    },
+    {
+      "name": "title",
+      "value": ""
+    },
+    {
+      "name": "html",
+      "value": ""
+    },
+    {
+      "name": "modified",
+      "value": ""
+    },
+    {
+      "name": "app_styles",
+      "value": "true"
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "search",
+  "description": "Searches Trilium (with its own search syntax) and sends the results to the window that asked. Args: query, replyTo.",
+  "hook": 0,
+  "prefix": "trilium",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "Only GMs",
+        "EntityId": "%gameId%",
+        "Permission": "Edit",
+        "StopIfDenied": true
+      }
+    },
+    {
+      "Type": "GetPropertyValue",
+      "Data": {
+        "Label": "The Trilium address",
+        "Of": "game",
+        "PropertyName": "trilium_url",
+        "Output": "url",
+        "DefaultValue": ""
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "The search URL",
+        "Include": "trilium_trilium.js",
+        "Script": "const base = baseUrl(vars.url);\nif (!base) return outcome(vars, { kind: 'search', ok: false, error: 'Set the Trilium address in Settings first.' });\nif (!String(vars.query || '').trim()) return outcome(vars, { kind: 'search', ok: false, error: 'Type something to search for.' });\nreturn outcome(vars, { kind: 'search', ok: true }, { url: searchUrl(base, vars.query) });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Stop if that failed",
+        "Condition": "'%failed%' = 'yes'",
+        "Then": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Tell the GM",
+              "Condition": "'%hasReply%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "RunClientCommand",
+                  "Data": {
+                    "Label": "Answer the window that asked",
+                    "Panel": "%replyTo%",
+                    "Command": "Reply",
+                    "Player": "%playerId%",
+                    "Data": "%reply%"
+                  }
+                }
+              ],
+              "Else": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Or whisper it",
+                    "Template": "Text",
+                    "Title": "Trilium",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "Exit",
+            "Data": {
+              "Label": "Stop"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "SendRequest",
+      "Data": {
+        "Label": "Search Trilium",
+        "TargetUrl": "%url%",
+        "HttpMethod": "GET",
+        "BearerTokenPropertyName": "trilium_token",
+        "Output": "found"
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "The results",
+        "Include": "trilium_trilium.js",
+        "Script": "const r = readResponse(vars.found, 'search results');\nif (!r.ok) return outcome(vars, { kind: 'search', ok: false, error: r.error });\nreturn outcome(vars, { kind: 'search', ok: true, query: String(vars.query), results: searchResults(r.body, vars.query) });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Tell the GM",
+        "Condition": "'%hasReply%' = 'yes'",
+        "Then": [
+          {
+            "Type": "RunClientCommand",
+            "Data": {
+              "Label": "Answer the window that asked",
+              "Panel": "%replyTo%",
+              "Command": "Reply",
+              "Player": "%playerId%",
+              "Data": "%reply%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "SendChat",
+            "Data": {
+              "Label": "Or whisper it",
+              "Template": "Text",
+              "Title": "Trilium",
+              "Message": "%notice%",
+              "Player": "%playerId%"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

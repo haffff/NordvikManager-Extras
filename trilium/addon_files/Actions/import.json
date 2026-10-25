@@ -1,0 +1,283 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "import",
+  "description": "Imports a Trilium note (its text and images) into a Trilium Note card, or updates the note's card. Args: noteId, replyTo, open ('yes' to show it after).",
+  "hook": 0,
+  "prefix": "trilium",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "Only GMs",
+        "EntityId": "%gameId%",
+        "Permission": "Edit",
+        "StopIfDenied": true
+      }
+    },
+    {
+      "Type": "GetPropertyValue",
+      "Data": {
+        "Label": "The Trilium address",
+        "Of": "game",
+        "PropertyName": "trilium_url",
+        "Output": "url",
+        "DefaultValue": ""
+      }
+    },
+    {
+      "Type": "GetPropertyValue",
+      "Data": {
+        "Label": "The folder for notes",
+        "Of": "game",
+        "PropertyName": "trilium_folder",
+        "Output": "folder",
+        "DefaultValue": ""
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "The note URLs",
+        "Include": "trilium_trilium.js",
+        "Script": "const base = baseUrl(vars.url);\nif (!base) return outcome(vars, { kind: 'imported', ok: false, error: 'Set the Trilium address in Settings first.' });\nif (!isNoteId(vars.noteId)) return outcome(vars, { kind: 'imported', ok: false, error: 'That is not a Trilium note id.' });\nreturn outcome(vars, { kind: 'imported', ok: true }, { base: base, metaUrl: noteUrl(base, vars.noteId),\n  contentUrl: noteUrl(base, vars.noteId, 'content'), openAfter: vars.open === 'yes' ? 'yes' : 'no' });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Stop if that failed",
+        "Condition": "'%failed%' = 'yes'",
+        "Then": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Tell the GM",
+              "Condition": "'%hasReply%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "RunClientCommand",
+                  "Data": {
+                    "Label": "Answer the window that asked",
+                    "Panel": "%replyTo%",
+                    "Command": "Reply",
+                    "Player": "%playerId%",
+                    "Data": "%reply%"
+                  }
+                }
+              ],
+              "Else": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Or whisper it",
+                    "Template": "Text",
+                    "Title": "Trilium",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "Exit",
+            "Data": {
+              "Label": "Stop"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "SendRequest",
+      "Data": {
+        "Label": "The note",
+        "TargetUrl": "%metaUrl%",
+        "HttpMethod": "GET",
+        "BearerTokenPropertyName": "trilium_token",
+        "Output": "meta"
+      }
+    },
+    {
+      "Type": "SendRequest",
+      "Data": {
+        "Label": "Its content",
+        "TargetUrl": "%contentUrl%",
+        "HttpMethod": "GET",
+        "BearerTokenPropertyName": "trilium_token",
+        "Output": "content"
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Prepare the card",
+        "Include": "trilium_trilium.js",
+        "Script": "const meta = readResponse(vars.meta, 'such note');\nif (!meta.ok) return outcome(vars, { kind: 'imported', ok: false, noteId: vars.noteId, error: meta.error });\nconst content = readResponse(vars.content, \"that note's content\");\nif (!content.ok) return outcome(vars, { kind: 'imported', ok: false, noteId: vars.noteId, error: content.error });\nconst note = meta.body && typeof meta.body === 'object' ? meta.body : {};\nconst prepared = prepareNote(noteHtml(note, rawBody(vars.content), vars.noteId), vars.base);\nlet existing = indexedCard(game.getProperty(vars.gameId, 'trilium_cards', '{}'), vars.noteId);\nif (existing && !game.find('cards', { id: existing, first: true })) existing = '';\nconst template = game.find('cards', { name: 'Trilium Note', includeTemplates: true }).filter(function (c) { return c.isTemplate; })[0];\nif (!existing && !template) return outcome(vars, { kind: 'imported', ok: false, error: 'The Trilium Note template is missing: reinstall the addon.' });\nconst title = String(note.title || '').trim() || 'Untitled note';\nreturn outcome(vars, { kind: 'imported', ok: true }, { title: title, html: prepared.html, modified: String(note.utcDateModified || ''),\n  downloads: prepared.downloads, existingCardId: existing, hasCard: existing ? 'yes' : 'no', templateId: template ? template.id : '' });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Stop if that failed",
+        "Condition": "'%failed%' = 'yes'",
+        "Then": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Tell the GM",
+              "Condition": "'%hasReply%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "RunClientCommand",
+                  "Data": {
+                    "Label": "Answer the window that asked",
+                    "Panel": "%replyTo%",
+                    "Command": "Reply",
+                    "Player": "%playerId%",
+                    "Data": "%reply%"
+                  }
+                }
+              ],
+              "Else": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Or whisper it",
+                    "Template": "Text",
+                    "Title": "Trilium",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "Exit",
+            "Data": {
+              "Label": "Stop"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "ForEach",
+      "Data": {
+        "Label": "Download its images",
+        "Collection": "downloads",
+        "ItemName": "img",
+        "Do": [
+          {
+            "Type": "DownloadResource",
+            "Data": {
+              "Label": "One image",
+              "TargetUrl": "%img.url%",
+              "Key": "%img.key%",
+              "Name": "%img.name%",
+              "BearerTokenPropertyName": "trilium_token",
+              "Output": "downloaded"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "A card for it yet?",
+        "Condition": "'%hasCard%' = 'yes'",
+        "Then": [
+          {
+            "Type": "SetVariable",
+            "Data": {
+              "Label": "Its card",
+              "Name": "noteCardId",
+              "Value": "%existingCardId%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "CreateCard",
+            "Data": {
+              "Label": "A new card",
+              "Name": "%title%",
+              "TemplateId": "%templateId%",
+              "Output": "noteCardId",
+              "Folder": "%folder%"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "SetProperties",
+      "Data": {
+        "Label": "Fill it in",
+        "ParentId": "%noteCardId%",
+        "Properties": "trilium_note_id=%noteId%\ntitle=%title%\nhtml=%html%\nmodified=%modified%"
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Remember it",
+        "Include": "trilium_trilium.js",
+        "Script": "game.setProperty(vars.gameId, 'trilium_cards', withIndexed(game.getProperty(vars.gameId, 'trilium_cards', '{}'), vars.noteId, vars.noteCardId));\nreturn outcome(vars, { kind: 'imported', ok: true, noteId: vars.noteId, cardId: vars.noteCardId, title: vars.title,\n  message: 'Imported \"' + vars.title + '\" from Trilium.' });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Tell the GM",
+        "Condition": "'%hasReply%' = 'yes'",
+        "Then": [
+          {
+            "Type": "RunClientCommand",
+            "Data": {
+              "Label": "Answer the window that asked",
+              "Panel": "%replyTo%",
+              "Command": "Reply",
+              "Player": "%playerId%",
+              "Data": "%reply%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "SendChat",
+            "Data": {
+              "Label": "Or whisper it",
+              "Template": "Text",
+              "Title": "Trilium",
+              "Message": "%notice%",
+              "Player": "%playerId%"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Show it?",
+        "Condition": "'%openAfter%' = 'yes'",
+        "Then": [
+          {
+            "Type": "ShowView",
+            "Data": {
+              "Label": "Show the note",
+              "ViewKey": "trilium_viewer",
+              "Player": "%playerId%",
+              "Data": "{\"view\":\"viewer\",\"cardId\":\"%noteCardId%\"}"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

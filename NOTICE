@@ -24,3 +24,8 @@ Under section 7(b), the following author attributions must be preserved:
 
 Third-party components bundled with this program keep their own licenses, as stated next to
 them.
+
+Trilium (trilium/) bundles into Resources/trilium-app.js:
+- DOMPurify, (C) Cure53 and other contributors, under the Apache License 2.0 or the Mozilla
+  Public License 2.0 (https://github.com/cure53/DOMPurify/blob/main/LICENSE);
+- React and React DOM, (C) Meta Platforms, Inc. and affiliates, under the MIT License.
