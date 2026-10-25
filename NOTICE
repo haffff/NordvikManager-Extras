@@ -24,3 +24,6 @@ Under section 7(b), the following author attributions must be preserved:
 
 Third-party components bundled with this program keep their own licenses, as stated next to
 them.
+
+Poll (poll/) bundles into Resources/poll-app.js:
+- React and React DOM, (C) Meta Platforms, Inc. and affiliates, under the MIT License.

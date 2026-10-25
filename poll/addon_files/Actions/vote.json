@@ -1,0 +1,59 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "vote",
+  "description": "Counts a vote in a poll. Args: pollId, choices (numbers from 1, e.g. \"1,3\", or an option's text), replyTo.",
+  "hook": 0,
+  "prefix": "poll",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Check and count the vote",
+        "Include": "poll_poll.js",
+        "Script": "return castVote(game, vars);"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Tell whoever asked",
+        "Condition": "'%hasReply%' = 'yes'",
+        "Then": [
+          {
+            "Type": "RunClientCommand",
+            "Data": {
+              "Label": "Answer the window that asked",
+              "Panel": "%replyTo%",
+              "Command": "Reply",
+              "Player": "%playerId%",
+              "Data": "%reply%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Anything to say?",
+              "Condition": "'%hasNotice%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Whisper it",
+                    "Template": "Text",
+                    "Title": "Poll",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

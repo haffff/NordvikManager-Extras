@@ -1,0 +1,59 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "close",
+  "description": "Closes a poll and posts the results to chat. The GM or whoever started it. Args: pollId, replyTo.",
+  "hook": 0,
+  "prefix": "poll",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Check and close the poll",
+        "Include": "poll_poll.js",
+        "Script": "return closePoll(game, vars);"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Tell whoever asked",
+        "Condition": "'%hasReply%' = 'yes'",
+        "Then": [
+          {
+            "Type": "RunClientCommand",
+            "Data": {
+              "Label": "Answer the window that asked",
+              "Panel": "%replyTo%",
+              "Command": "Reply",
+              "Player": "%playerId%",
+              "Data": "%reply%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Anything to say?",
+              "Condition": "'%hasNotice%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Whisper it",
+                    "Template": "Text",
+                    "Title": "Poll",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

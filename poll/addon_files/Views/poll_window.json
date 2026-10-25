@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/card.json",
+  "name": "Poll",
+  "description": "A poll to vote in, or the window for starting a new one.",
+  "key": "poll_window",
+  "mainResource": "poll_index.html",
+  "additionalResources": [
+    "poll_poll-app.css",
+    "poll_poll-app.js"
+  ],
+  "genericPermission": 1,
+  "properties": [
+    {
+      "name": "app_styles",
+      "value": "true"
+    }
+  ]
+}

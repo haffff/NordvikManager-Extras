@@ -1,0 +1,93 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "create_menus",
+  "description": "Adds the Polls menu for each player as the game loads. New poll goes to everyone when the GM lets everyone start polls, else only to GMs; Settings only to GMs.",
+  "hook": 5,
+  "prefix": "poll",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "GetPropertyValue",
+      "Data": {
+        "Label": "Who may start polls",
+        "Of": "game",
+        "ParentId": "%gameId%",
+        "PropertyName": "poll_who_starts",
+        "Output": "whoStarts",
+        "DefaultValue": "gm"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Everyone may start polls?",
+        "Condition": "'%whoStarts%' = 'everyone'",
+        "Then": [
+          {
+            "Type": "AddMenuItem",
+            "Data": {
+              "Label": "New poll, for everyone",
+              "Name": "poll_new",
+              "UiName": "New poll",
+              "Action": "poll/open_new",
+              "Location": "addons",
+              "OnlyTriggeringPlayer": true,
+              "GmOnly": false,
+              "Icon": "FaPlus",
+              "SubMenuId": "poll_menu",
+              "SubMenuName": "Polls"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "AddMenuItem",
+            "Data": {
+              "Label": "New poll, for GMs",
+              "Name": "poll_new",
+              "UiName": "New poll",
+              "Action": "poll/open_new",
+              "Location": "addons",
+              "OnlyTriggeringPlayer": true,
+              "GmOnly": true,
+              "Icon": "FaPlus",
+              "SubMenuId": "poll_menu",
+              "SubMenuName": "Polls"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Current poll",
+        "Name": "poll_current",
+        "UiName": "Current poll",
+        "Action": "poll/open_current",
+        "Location": "addons",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": false,
+        "Icon": "FaPoll",
+        "SubMenuId": "poll_menu",
+        "SubMenuName": "Polls"
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Settings (GMs)",
+        "Name": "poll_settings",
+        "UiName": "Settings",
+        "Action": "poll/open_settings",
+        "Location": "addons",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaCog",
+        "SubMenuId": "poll_menu",
+        "SubMenuName": "Polls"
+      }
+    }
+  ]
+}

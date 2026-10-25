@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "open_settings",
+  "description": "Opens the poll settings for the GM.",
+  "hook": 0,
+  "prefix": "poll",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "Only GMs",
+        "EntityId": "%gameId%",
+        "Permission": "Edit",
+        "StopIfDenied": true
+      }
+    },
+    {
+      "Type": "ShowView",
+      "Data": {
+        "Label": "Open settings",
+        "ViewKey": "poll_gm",
+        "Player": "%playerId%",
+        "Data": "{\"view\":\"settings\"}"
+      }
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "my_vote",
+  "description": "Tells a voter what they picked in a poll (only their own). Args: pollId, replyTo.",
+  "hook": 0,
+  "prefix": "poll",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Read the voter's own ballot",
+        "Include": "poll_poll.js",
+        "Script": "return myVote(game, vars);"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Tell whoever asked",
+        "Condition": "'%hasReply%' = 'yes'",
+        "Then": [
+          {
+            "Type": "RunClientCommand",
+            "Data": {
+              "Label": "Answer the window that asked",
+              "Panel": "%replyTo%",
+              "Command": "Reply",
+              "Player": "%playerId%",
+              "Data": "%reply%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Anything to say?",
+              "Condition": "'%hasNotice%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Whisper it",
+                    "Template": "Text",
+                    "Title": "Poll",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
