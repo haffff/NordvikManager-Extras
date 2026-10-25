@@ -1,0 +1,113 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "create_menus",
+  "description": "Adds the Obsidian menus for each player as the game loads; the GM's ones only for GMs.",
+  "hook": 5,
+  "prefix": "obsidian",
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Search notes (Addons menu)",
+        "Name": "obsidian_search",
+        "UiName": "Search notes",
+        "Action": "obsidian/open_search",
+        "Location": "addons",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaSearch",
+        "SubMenuId": "obsidian_menu",
+        "SubMenuName": "Obsidian"
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Settings (Addons menu)",
+        "Name": "obsidian_settings",
+        "UiName": "Settings",
+        "Action": "obsidian/open_settings",
+        "Location": "addons",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaCog",
+        "SubMenuId": "obsidian_menu",
+        "SubMenuName": "Obsidian"
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Show lore (token menu)",
+        "Name": "obsidian_show_lore",
+        "UiName": "Show lore",
+        "Action": "obsidian/show_lore",
+        "Location": "battlemap_element",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": false,
+        "Icon": "FaBook"
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Pin a note (token menu)",
+        "Name": "obsidian_pin",
+        "UiName": "Pin Obsidian note",
+        "Action": "obsidian/pin_note",
+        "Location": "battlemap_element",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaThumbtack",
+        "SubMenuId": "obsidian_token_menu",
+        "SubMenuName": "Obsidian"
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Refresh (Cards panel)",
+        "Name": "obsidian_refresh",
+        "UiName": "Refresh from Obsidian",
+        "Action": "obsidian/refresh",
+        "Location": "cards_item",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaSync",
+        "SubMenuId": "obsidian_card_menu",
+        "SubMenuName": "Obsidian"
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Share (Cards panel)",
+        "Name": "obsidian_share",
+        "UiName": "Share with players",
+        "Action": "obsidian/share",
+        "Location": "cards_item",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaShareSquare",
+        "SubMenuId": "obsidian_card_menu",
+        "SubMenuName": "Obsidian"
+      }
+    },
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "Take back (Cards panel)",
+        "Name": "obsidian_unshare",
+        "UiName": "Take back from players",
+        "Action": "obsidian/unshare",
+        "Location": "cards_item",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaEyeSlash",
+        "SubMenuId": "obsidian_card_menu",
+        "SubMenuName": "Obsidian"
+      }
+    }
+  ]
+}

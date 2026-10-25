@@ -1,0 +1,146 @@
+/* The template and views set app_styles = "true", so the app's colour variables are there.
+   Always give a fallback: the page also runs in `pnpm dev`. */
+body {
+  margin: 0;
+  /* Opaque: a theme's --nordvik-surface may be see-through (it sits on the dock in the
+     app), and under it a card's frame is white, so the page would turn grey. */
+  background: var(--nordvik-background-color, #1e1e1e);
+  color: var(--nordvik-text-color, #eee);
+  font-family: var(--nordvik-font, system-ui, sans-serif);
+}
+
+.obs-page {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.obs-page h1 {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.obs-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.obs-grow {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.obs-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.obs-page input {
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--nordvik-border, rgb(65, 65, 65));
+  background: var(--nordvik-surface-sunken, rgb(28, 28, 28));
+  color: inherit;
+  font: inherit;
+}
+
+.obs-page button {
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--nordvik-control-border, rgb(90, 90, 90));
+  background: var(--nordvik-control, rgb(45, 45, 45));
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.obs-page button:hover:not(:disabled) { background: var(--nordvik-control-hover, rgb(70, 70, 70)); }
+.obs-page button:disabled { opacity: 0.5; cursor: default; }
+
+.obs-muted { opacity: 0.7; }
+.obs-ok { color: var(--nordvik-accent-green, rgb(80, 200, 120)); margin: 0; }
+.obs-error { color: var(--nordvik-accent-red, rgb(220, 80, 80)); margin: 0; }
+
+.obs-help {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.obs-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.obs-results li {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--nordvik-border, rgb(65, 65, 65));
+  background: var(--nordvik-surface-raised, rgb(48, 48, 48));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.obs-title { font-weight: 600; }
+.obs-snippet { margin: 2px 0; font-size: 0.9em; overflow-wrap: anywhere; }
+
+.obs-note {
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.obs-note img {
+  max-width: 100%;
+  height: auto;
+}
+
+.obs-note img:not([src]) { display: none; }
+
+.obs-note a[data-nm-note] {
+  color: var(--nordvik-accent-text, rgb(130, 210, 205));
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.obs-note table {
+  border-collapse: collapse;
+  max-width: 100%;
+}
+
+.obs-note td,
+.obs-note th {
+  border: 1px solid var(--nordvik-border, rgb(65, 65, 65));
+  padding: 4px 6px;
+}
+
+.obs-note blockquote {
+  margin: 0.5em 0;
+  padding: 0.25em 0.75em;
+  border-left: 3px solid var(--nordvik-border, rgb(65, 65, 65));
+  opacity: 0.9;
+}
+
+.obs-note pre,
+.obs-note code {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.9em;
+  background: var(--nordvik-control, rgba(255, 255, 255, 0.06));
+  border-radius: 3px;
+}
+
+.obs-note code { padding: 0 3px; }
+
+.obs-note pre {
+  padding: 6px 8px;
+  overflow-x: auto;
+}
+
+.obs-note pre code { padding: 0; background: none; }

@@ -1,0 +1,155 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "open_link",
+  "description": "Finds the note a [[link]] names (from the note it is in) and imports it. Args: target, from, replyTo, open ('yes' to show it after).",
+  "hook": 0,
+  "prefix": "obsidian",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "Only GMs",
+        "EntityId": "%gameId%",
+        "Permission": "Edit",
+        "StopIfDenied": true
+      }
+    },
+    {
+      "Type": "GetPropertyValue",
+      "Data": {
+        "Label": "The Obsidian address",
+        "Of": "game",
+        "PropertyName": "obsidian_url",
+        "Output": "url",
+        "DefaultValue": ""
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Look for its name",
+        "Include": "obsidian_obsidian.js",
+        "Script": "const base = baseUrl(vars.url);\nif (!base) return outcome(vars, { kind: 'imported', ok: false, error: 'Set the Obsidian address in Settings first.' });\nconst target = String(vars.target || '').trim();\nif (!target || target.length > 300 || /[\\n\\r]/.test(target)) return outcome(vars, { kind: 'imported', ok: false, error: 'That link has no note name.' });\nreturn outcome(vars, { kind: 'imported', ok: true }, { url: searchUrl(base, titleOf(target)), linkTarget: target });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Stop if that failed",
+        "Condition": "'%failed%' = 'yes'",
+        "Then": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Tell the GM",
+              "Condition": "'%hasReply%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "RunClientCommand",
+                  "Data": {
+                    "Label": "Answer the window that asked",
+                    "Panel": "%replyTo%",
+                    "Command": "Reply",
+                    "Player": "%playerId%",
+                    "Data": "%reply%"
+                  }
+                }
+              ],
+              "Else": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Or whisper it",
+                    "Template": "Text",
+                    "Title": "Obsidian",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "Exit",
+            "Data": {
+              "Label": "Stop"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "SendRequest",
+      "Data": {
+        "Label": "Search for it",
+        "TargetUrl": "%url%",
+        "HttpMethod": "POST",
+        "BearerTokenPropertyName": "obsidian_key",
+        "Output": "found"
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "The note it means",
+        "Include": "obsidian_obsidian.js",
+        "Script": "const r = readResponse(vars.found, 'search results');\nif (!r.ok) return outcome(vars, { kind: 'imported', ok: false, error: r.error });\nconst path = resolveLink(r.body, vars.linkTarget, isNotePath(vars.from) ? vars.from : '');\nif (!path) return outcome(vars, { kind: 'imported', ok: false, error: 'There is no note \"' + vars.linkTarget + '\" in the vault.' });\nreturn outcome(vars, { kind: 'imported', ok: true }, { notePath: path, open: vars.open === 'yes' ? 'yes' : 'no' });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Stop if that failed",
+        "Condition": "'%failed%' = 'yes'",
+        "Then": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Tell the GM",
+              "Condition": "'%hasReply%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "RunClientCommand",
+                  "Data": {
+                    "Label": "Answer the window that asked",
+                    "Panel": "%replyTo%",
+                    "Command": "Reply",
+                    "Player": "%playerId%",
+                    "Data": "%reply%"
+                  }
+                }
+              ],
+              "Else": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Or whisper it",
+                    "Template": "Text",
+                    "Title": "Obsidian",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "Exit",
+            "Data": {
+              "Label": "Stop"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "ExecuteAction",
+      "Data": {
+        "Label": "Import it",
+        "Value": "obsidian/import"
+      }
+    }
+  ]
+}

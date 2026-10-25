@@ -1,0 +1,160 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "save_settings",
+  "description": "Saves the plugin address, the Cards panel folder for imported notes, the attachments folder and, when given, the API key (protected: nothing can read it back). Args: url, key, folder, attachments, replyTo.",
+  "hook": 0,
+  "prefix": "obsidian",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "Only GMs",
+        "EntityId": "%gameId%",
+        "Permission": "Edit",
+        "StopIfDenied": true
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Check what was typed",
+        "Include": "obsidian_obsidian.js",
+        "Script": "const base = baseUrl(vars.url);\nif (!base) return outcome(vars, { kind: 'saved', ok: false, error: 'The address must start with http:// or https://, e.g. http://127.0.0.1:27123' });\nconst folder = folderPath(vars.folder);\nif (folder === null) return outcome(vars, { kind: 'saved', ok: false, error: 'The folder for notes can have at most 10 levels, each name at most 100 characters.' });\nconst attachments = String(vars.attachments || '').trim().replace(/^\\/+|\\/+$/g, '');\nif (attachments && !(attachments === '.' || isVaultPath(attachments.replace(/^\\.\\//, '')))) return outcome(vars, { kind: 'saved', ok: false, error: 'The attachments folder must be a folder of the vault, e.g. Attachments or ./assets.' });\nconst hasKey = typeof vars.key === 'string' && vars.key.trim() !== '' ? 'yes' : 'no';\nreturn outcome(vars, { kind: 'saved', ok: true, message: 'Saved.' }, { base: base, folder: folder, attachments: attachments, hasKey: hasKey });"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Stop if that failed",
+        "Condition": "'%failed%' = 'yes'",
+        "Then": [
+          {
+            "Type": "If",
+            "Data": {
+              "Label": "Tell the GM",
+              "Condition": "'%hasReply%' = 'yes'",
+              "Then": [
+                {
+                  "Type": "RunClientCommand",
+                  "Data": {
+                    "Label": "Answer the window that asked",
+                    "Panel": "%replyTo%",
+                    "Command": "Reply",
+                    "Player": "%playerId%",
+                    "Data": "%reply%"
+                  }
+                }
+              ],
+              "Else": [
+                {
+                  "Type": "SendChat",
+                  "Data": {
+                    "Label": "Or whisper it",
+                    "Template": "Text",
+                    "Title": "Obsidian",
+                    "Message": "%notice%",
+                    "Player": "%playerId%"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Type": "Exit",
+            "Data": {
+              "Label": "Stop"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "SetProperty",
+      "Data": {
+        "Label": "Save the address",
+        "Of": "game",
+        "PropertyName": "obsidian_url",
+        "PropertyValue": "%base%"
+      }
+    },
+    {
+      "Type": "SetProperty",
+      "Data": {
+        "Label": "Save the folder for notes",
+        "Of": "game",
+        "PropertyName": "obsidian_folder",
+        "PropertyValue": "%folder%"
+      }
+    },
+    {
+      "Type": "SetProperty",
+      "Data": {
+        "Label": "Save the attachments folder",
+        "Of": "game",
+        "PropertyName": "obsidian_attachments",
+        "PropertyValue": "%attachments%"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "A new key?",
+        "Condition": "'%hasKey%' = 'yes'",
+        "Then": [
+          {
+            "Type": "SetProperty",
+            "Data": {
+              "Label": "Save the key, protected",
+              "Of": "game",
+              "PropertyName": "obsidian_key",
+              "PropertyValue": "%key%",
+              "Protected": true
+            }
+          },
+          {
+            "Type": "SetProperty",
+            "Data": {
+              "Label": "Remember that there is one",
+              "Of": "game",
+              "PropertyName": "obsidian_key_set",
+              "PropertyValue": "true"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Tell the GM",
+        "Condition": "'%hasReply%' = 'yes'",
+        "Then": [
+          {
+            "Type": "RunClientCommand",
+            "Data": {
+              "Label": "Answer the window that asked",
+              "Panel": "%replyTo%",
+              "Command": "Reply",
+              "Player": "%playerId%",
+              "Data": "%reply%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "SendChat",
+            "Data": {
+              "Label": "Or whisper it",
+              "Template": "Text",
+              "Title": "Obsidian",
+              "Message": "%notice%",
+              "Player": "%playerId%"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
