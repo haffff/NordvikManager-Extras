@@ -8,6 +8,7 @@ function Detail({ note, me, isGm, onEdit, onRemove, onReply, onClose }) {
   const [reply, setReply] = useState('');
   useEffect(() => setText(note.text), [note.id, note.text]);
   const canEdit = mine(note, me, isGm);
+  const send = () => { if (reply.trim()) { onReply(note.id, reply.trim()); setReply(''); } };
   return (
     <div className="pdf-note-detail">
       <div className="pdf-note-head">
@@ -32,10 +33,12 @@ function Detail({ note, me, isGm, onEdit, onRemove, onReply, onClose }) {
           </div>
         ))}
       </div>
-      <form className="pdf-row" onSubmit={(e) => { e.preventDefault(); if (reply.trim()) { onReply(note.id, reply.trim()); setReply(''); } }}>
-        <input value={reply} maxLength={2000} placeholder="Reply…" onChange={(e) => setReply(e.target.value)} />
-        <button type="submit" disabled={!reply.trim()}>Reply</button>
-      </form>
+      {/* No <form>: the card's frame is sandboxed without allow-forms, so submitting is blocked. */}
+      <div className="pdf-row">
+        <input value={reply} maxLength={2000} placeholder="Reply…" onChange={(e) => setReply(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') send(); }} />
+        <button type="button" disabled={!reply.trim()} onClick={send}>Reply</button>
+      </div>
     </div>
   );
 }

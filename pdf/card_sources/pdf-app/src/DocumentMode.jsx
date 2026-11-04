@@ -170,11 +170,12 @@ export function DocumentMode({ api, player }) {
         </label>
       </div>
       <Tools tool={tool} setTool={setTool} color={color} setColor={setColor} zoom={zoom} setZoom={setZoom} hasText>
-        <form className="pdf-tool-group pdf-share-form" onSubmit={(e) => { e.preventDefault(); if (doc) show(); }}>
+        {/* No <form>: the card's frame is sandboxed without allow-forms, so submitting is blocked. */}
+        <div className="pdf-tool-group pdf-share-form" onKeyDown={(e) => { if (e.key === 'Enter' && e.target.tagName === 'INPUT' && doc) show(); }}>
           <input value={pagesText} onChange={(e) => setPagesText(e.target.value)} placeholder={`Pages (${position.page})`} size={8} title="e.g. 3-5, 8" />
           <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" size={10} maxLength={100} />
-          <button type="submit" disabled={!doc}>Show to players</button>
-        </form>
+          <button type="button" disabled={!doc} onClick={show}>Show to players</button>
+        </div>
       </Tools>
       {status && <div className="pdf-status">{status}</div>}
       <div className="pdf-body">
