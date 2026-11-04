@@ -7,7 +7,7 @@ function Detail({ note, me, isGm, onEdit, onRemove, onReply, onClose }) {
   const [text, setText] = useState(note.text);
   const [reply, setReply] = useState('');
   useEffect(() => setText(note.text), [note.id, note.text]);
-  const canEdit = mine(note, me, isGm);
+  const canEdit = mine(note, me, isGm) && !note.pending;
   const send = () => { if (reply.trim()) { onReply(note.id, reply.trim()); setReply(''); } };
   return (
     <div className="pdf-note-detail">
@@ -16,6 +16,7 @@ function Detail({ note, me, isGm, onEdit, onRemove, onReply, onClose }) {
         <b>{KIND_LABEL[note.kind]}</b> · page {note.page} · {note.authorName || 'someone'}
         <button type="button" className="pdf-link" onClick={onClose}>Close</button>
       </div>
+      {note.pending && <p className="pdf-muted">Saving…</p>}
       {canEdit ? (
         <>
           <textarea value={text} maxLength={2000} placeholder="Add a note…" onChange={(e) => setText(e.target.value)} />
@@ -37,14 +38,14 @@ function Detail({ note, me, isGm, onEdit, onRemove, onReply, onClose }) {
       <div className="pdf-row">
         <input value={reply} maxLength={2000} placeholder="Reply…" onChange={(e) => setReply(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') send(); }} />
-        <button type="button" disabled={!reply.trim()} onClick={send}>Reply</button>
+        <button type="button" disabled={!reply.trim() || note.pending} onClick={send}>Reply</button>
       </div>
     </div>
   );
 }
 
 /** Notes on the pages in view, or the selected one with its replies. */
-export function Notes({ byId, pages, selectedId, me, isGm, onSelect, onEdit, onRemove, onReply }) {
+export const Notes = React.memo(function Notes({ byId, pages, selectedId, me, isGm, onSelect, onEdit, onRemove, onReply }) {
   const selected = selectedId ? byId.get(selectedId) : null;
   if (selected) return <Detail note={selected} me={me} isGm={isGm} onEdit={onEdit} onRemove={onRemove} onReply={onReply} onClose={() => onSelect(null)} />;
   const shown = new Set(pages);
@@ -63,4 +64,4 @@ export function Notes({ byId, pages, selectedId, me, isGm, onSelect, onEdit, onR
       ))}
     </ul>
   );
-}
+});

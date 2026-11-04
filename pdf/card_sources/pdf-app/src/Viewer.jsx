@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useProperty, fire, idOf } from './api.js';
 import { useNotes } from './useNotes.js';
 import { decodeView, presenterView } from './lib/model.mjs';
@@ -74,7 +74,7 @@ export function Viewer({ api, documentId, player }) {
   const source = useMemo(() => parseJson(sourceRaw), [sourceRaw]);
   const view = useMemo(() => decodeView(viewRaw || ''), [viewRaw]);
   const shared = truthy(sharedRaw);
-  const notes = useNotes(api, documentId);
+  const notes = useNotes(api, documentId, player.me);
 
   const [doc, setDoc] = useState(null);
   const [status, setStatus] = useState('');
@@ -126,12 +126,22 @@ export function Viewer({ api, documentId, player }) {
   }, [presenting, position, view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pageNumbers = useMemo(() => (doc ? Array.from({ length: doc.numPages }, (_, i) => i + 1) : []), [doc]);
-  const create = (annotation) => { notes.add({ ...annotation, color }); setTool((t) => (t === 'pin' ? 'select' : t)); };
-  const jumpTo = (id) => {
+  // Stable callbacks: pages and the notes panel only redraw when their own things change.
+  const colorRef = useRef(color);
+  colorRef.current = color;
+  const byIdRef = useRef(notes.byId);
+  byIdRef.current = notes.byId;
+  const { add: addNote, edit: editNote, remove: removeNote, reply: replyNote } = notes;
+  const create = useCallback((annotation) => {
+    addNote({ ...annotation, color: colorRef.current });
+    setTool((t) => (t === 'pin' ? 'select' : t));
+  }, [addNote]);
+  const jumpTo = useCallback((id) => {
     setSelectedId(id);
-    const n = id && notes.byId.get(id);
+    const n = id && byIdRef.current.get(id);
     if (n) { setFollow(false); setGoto((g) => ({ page: n.page, scroll: Math.max(0, (n.shape?.[0]?.[1] ?? n.shape?.[1] ?? 0) - 0.1), seq: (g?.seq ?? 0) + 1, smooth: true })); }
-  };
+  }, []);
+  const removeAndClose = useCallback((id) => { removeNote(id); setSelectedId(null); }, [removeNote]);
 
   if (sourceRaw === null) return <div className="pdf-empty">Loading…</div>;
   if (!ref) {
@@ -171,7 +181,7 @@ export function Viewer({ api, documentId, player }) {
         ) : <div className="pdf-empty">{status || 'Opening the PDF…'}</div>}
         <aside className="pdf-side">
           <Notes byId={notes.byId} pages={pageNumbers} selectedId={selectedId} me={player.me} isGm={isGm}
-            onSelect={jumpTo} onEdit={notes.edit} onRemove={(id) => { notes.remove(id); setSelectedId(null); }} onReply={notes.reply} />
+            onSelect={jumpTo} onEdit={editNote} onRemove={removeAndClose} onReply={replyNote} />
         </aside>
       </div>
     </div>

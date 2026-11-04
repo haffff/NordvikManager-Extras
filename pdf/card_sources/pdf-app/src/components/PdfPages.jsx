@@ -13,7 +13,7 @@ function Note({ note, selected, onSelect, tool }) {
   const clickable = tool === 'select';
   const common = {
     onClick: clickable ? (e) => { e.stopPropagation(); onSelect(note.id); } : undefined,
-    className: `pdf-note pdf-note-${note.kind}${selected ? ' selected' : ''}`,
+    className: `pdf-note pdf-note-${note.kind}${selected ? ' selected' : ''}${note.pending ? ' pending' : ''}`,
     style: { pointerEvents: clickable ? 'auto' : 'none' },
   };
   if (note.kind === 'highlight') {
@@ -29,7 +29,8 @@ function Note({ note, selected, onSelect, tool }) {
   return null; // pins are drawn as HTML (round at any aspect)
 }
 
-function Page({ pdfDoc, index, docPage, width, textLayer, notes, tool, color, selectedId, onSelect, onCreate, registerEl, estimate }) {
+// Memoized: a page redraws only when its own notes, its selection, the tool or its size change.
+const Page = React.memo(function Page({ pdfDoc, index, docPage, width, textLayer, notes, tool, color, selectedId, onSelect, onCreate, registerEl, estimate }) {
   const holder = useRef(null);
   const canvasRef = useRef(null);
   const textRef = useRef(null);
@@ -120,7 +121,7 @@ function Page({ pdfDoc, index, docPage, width, textLayer, notes, tool, color, se
       {(notes || []).filter((n) => n.kind === 'pin').map((n) => (
         <button
           key={n.id} type="button" title={n.text || 'Pin'}
-          className={`pdf-pin${n.id === selectedId ? ' selected' : ''}`}
+          className={`pdf-pin${n.id === selectedId ? ' selected' : ''}${n.pending ? ' pending' : ''}`}
           style={{ left: `calc(${n.shape[0] * 100}% - ${PIN_SIZE / 2}px)`, top: `calc(${n.shape[1] * 100}% - ${PIN_SIZE}px)`, background: n.color, pointerEvents: tool === 'select' ? 'auto' : 'none' }}
           onClick={(e) => { e.stopPropagation(); onSelect(n.id); }}
         >{n.replies?.length ? n.replies.length + 1 : ''}</button>
@@ -131,14 +132,14 @@ function Page({ pdfDoc, index, docPage, width, textLayer, notes, tool, color, se
       <div className="pdf-page-number">{docPage}</div>
     </div>
   );
-}
+});
 
 /**
  * props: pdfDoc, pages (doc page per index), notesByPage, tool, color, selectedId, onSelect,
  * onCreate(annotation), textLayer, zoom, onPosition({ page, scroll }) while scrolling,
  * goto ({ page, scroll, seq }: scroll there when seq changes).
  */
-export function PdfPages({ pdfDoc, pages, notesByPage, tool, color, selectedId, onSelect, onCreate, textLayer, zoom, onPosition, goto }) {
+export const PdfPages = React.memo(function PdfPages({ pdfDoc, pages, notesByPage, tool, color, selectedId, onSelect, onCreate, textLayer, zoom, onPosition, goto }) {
   const scroller = useRef(null);
   const els = useRef(new Map());
   const [width, setWidth] = useState(0);
@@ -206,10 +207,11 @@ export function PdfPages({ pdfDoc, pages, notesByPage, tool, color, selectedId, 
       {width > 0 && pages.map((page, i) => (
         <Page
           key={`${i}-${page}`} pdfDoc={pdfDoc} index={i + 1} docPage={page} width={width} textLayer={textLayer}
-          notes={notesByPage.get(page)} tool={tool} color={color} selectedId={selectedId} onSelect={onSelect}
+          notes={notesByPage.get(page)} tool={tool} color={color} onSelect={onSelect}
+          selectedId={notesByPage.get(page)?.some((n) => n.id === selectedId) ? selectedId : null}
           onCreate={onCreate} registerEl={registerEl} estimate={estimate}
         />
       ))}
     </div>
   );
-}
+});

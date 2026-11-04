@@ -198,11 +198,14 @@ export function annotate(game, vars) {
     const a = checked.value;
     if (a.kind === 'reply' && !rows.some((r) => r.id === a.parent && r.fields.kind !== 'reply')) return fail('That note is gone.');
     const color = a.color || (COLOR.test(text(vars.playerColor)) ? text(vars.playerColor).toLowerCase() : '#ffd54f');
+    // the client's id for its pending copy of the note (it swaps the copy for this row)
+    const sent = parseJson(vars.annotation) || {};
+    const cid = ROW_ID.test(text(sent.cid)) ? text(sent.cid) : '';
     game.step('AddPropertyListItem', {
       ...list,
       Fields: JSON.stringify({
         kind: a.kind, page: String(a.page), shape: a.shape ? JSON.stringify(a.shape) : '', color, text: a.text,
-        parent: a.parent, author: text(vars.playerId), authorName: cleanText(vars.playerName, 100) || '', at: now(),
+        parent: a.parent, author: text(vars.playerId), authorName: cleanText(vars.playerName, 100) || '', at: now(), cid,
       }),
     });
     return outcome({ ok: true });

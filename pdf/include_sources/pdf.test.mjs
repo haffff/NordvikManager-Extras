@@ -162,3 +162,11 @@ test('annotate refuses other cards, unknown rows and replies to nothing', () => 
   assert.equal(annotate(game, asAna({ documentId: DOC, op: 'explode' })).failed, 'yes');
   assert.equal(notes(game).length, 0);
 });
+
+test("annotate keeps the client's id of a new note, so the client can swap its pending copy for it", () => {
+  const game = fakeGame();
+  annotate(game, asAna({ documentId: DOC, op: 'add', annotation: JSON.stringify({ kind: 'pin', page: 2, shape: [0.1, 0.1], cid: 'c-123_ab' }) }));
+  assert.equal(notes(game)[0].fields.cid, 'c-123_ab');
+  annotate(game, asAna({ documentId: DOC, op: 'add', annotation: JSON.stringify({ kind: 'pin', page: 2, shape: [0.1, 0.1], cid: 'x'.repeat(80) }) }));
+  assert.equal(notes(game)[1].fields.cid, '', 'an odd id is dropped');
+});
