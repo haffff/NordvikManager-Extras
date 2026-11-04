@@ -15,6 +15,7 @@ on:
           - trilium
           - poll
           - obsidian
+          - pdf
 
 jobs:
   release:

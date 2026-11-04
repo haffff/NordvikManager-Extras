@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "share",
+  "description": "Shows pages to the players: records a share (its small PDF already stored under resourceKey), moves everyone there and opens the viewer for the other players. GM only. Args: documentId, title, pages (e.g. 3-5, 8), resourceKey, kind (copy or image).",
+  "hook": 0,
+  "prefix": "pdf",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    { "Type": "RequirePermission", "Data": { "Label": "GMs only", "EntityId": "%gameId%", "Permission": "Edit", "StopIfDenied": "true" } },
+    { "Type": "RunScript", "Data": { "Label": "Check and do it", "Include": "pdf_pdf.js", "Script": "return startShare(game, vars);" } },
+    { "Type": "If", "Data": { "Label": "Anything to say?", "Condition": "'%hasNotice%' = 'yes'", "Then": [ { "Type": "SendChat", "Data": { "Label": "Whisper it", "Template": "Text", "Title": "PDF", "Message": "%notice%", "Player": "%playerId%" } } ] } }
+  ]
+}

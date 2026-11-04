@@ -1,0 +1,125 @@
+html, body, #root { height: 100%; margin: 0; }
+body {
+  background: var(--nordvik-surface, #1e1e1e);
+  color: var(--nordvik-text-color, #e8e8e8);
+  font-family: var(--nordvik-font, system-ui, sans-serif);
+  font-size: 13px;
+}
+button, input, textarea { font: inherit; color: inherit; }
+button {
+  background: var(--nordvik-surface-raised, #2c2c2c);
+  border: 1px solid var(--nordvik-border-color, #444);
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+button:disabled { opacity: 0.5; cursor: default; }
+button.active { outline: 2px solid var(--nordvik-accent, #64b5f6); }
+input, textarea {
+  background: var(--nordvik-input-bg, #151515);
+  border: 1px solid var(--nordvik-border-color, #444);
+  border-radius: 4px;
+  padding: 3px 6px;
+}
+
+.pdf-app { display: flex; flex-direction: column; height: 100%; }
+.pdf-header, .pdf-tools {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+  padding: 6px 8px; border-bottom: 1px solid var(--nordvik-border-color, #444);
+}
+.pdf-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 40%; }
+.pdf-muted { opacity: 0.65; }
+.pdf-follow { margin-left: auto; display: flex; gap: 4px; align-items: center; white-space: nowrap; }
+.pdf-tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+.pdf-tool-group { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.pdf-color { width: 20px; height: 20px; padding: 0; border-radius: 50%; }
+.pdf-zoom { min-width: 3em; text-align: center; }
+.pdf-share-form { margin-left: auto; }
+.pdf-status { padding: 4px 8px; background: var(--nordvik-surface-raised, #2c2c2c); }
+
+.pdf-body { flex: 1; display: flex; min-height: 0; }
+.pdf-scroller { position: relative; flex: 1; overflow: auto; padding: 8px 12px; background: var(--nordvik-background, #111); }
+.pdf-side {
+  width: 240px; flex: none; overflow: auto; padding: 8px;
+  border-left: 1px solid var(--nordvik-border-color, #444);
+}
+@media (max-width: 560px) {
+  .pdf-body { flex-direction: column; }
+  .pdf-side { width: auto; max-height: 35%; border-left: 0; border-top: 1px solid var(--nordvik-border-color, #444); }
+  .pdf-share-form { margin-left: 0; }
+}
+
+.pdf-page {
+  position: relative; margin: 0 auto 12px; background: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+.pdf-page canvas { position: absolute; inset: 0; }
+.pdf-page-number {
+  position: absolute; right: 6px; bottom: 4px; font-size: 11px; color: #555;
+  background: rgba(255, 255, 255, 0.7); padding: 0 4px; border-radius: 3px; pointer-events: none;
+}
+.pdf-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.pdf-note-highlight rect { fill-opacity: 0.35; mix-blend-mode: multiply; }
+.pdf-note-box rect, .pdf-note-ink polyline { stroke-width: 2.5px; }
+.pdf-note.selected rect, .pdf-note.selected polyline { stroke: #000; stroke-width: 3px; stroke-dasharray: 4 3; }
+.pdf-note.selected.pdf-note-highlight rect { stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.pdf-note { cursor: pointer; }
+.pdf-pin {
+  position: absolute; width: 22px; height: 22px; padding: 0; border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg); border: 2px solid #222; font-size: 10px; color: #000;
+}
+.pdf-pin.selected { border-color: #fff; box-shadow: 0 0 0 2px #000; }
+.pdf-draw { position: absolute; inset: 0; cursor: crosshair; touch-action: none; }
+
+/* pdf.js text layer (from pdfjs-dist/web/pdf_viewer.css, what selecting text needs) */
+.textLayer {
+  position: absolute; text-align: initial; inset: 0; overflow: clip; opacity: 1; line-height: 1;
+  letter-spacing: normal; word-spacing: normal; text-size-adjust: none; forced-color-adjust: none;
+  transform-origin: 0 0; z-index: 0;
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+.textLayer :is(span, br) {
+  color: transparent; position: absolute; white-space: pre; cursor: text;
+  transform-origin: 0% 0%; user-select: text;
+}
+.textLayer > :not(.markedContent), .textLayer .markedContent span:not(.markedContent) {
+  z-index: 1; --font-height: 0; font-size: calc(var(--text-scale-factor) * var(--font-height));
+  --scale-x: 1; --rotate: 0deg;
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+.textLayer .markedContent { display: contents; }
+.textLayer ::selection { background: rgba(0, 0, 255, 0.25); color: transparent; }
+.textLayer br::selection { background: transparent; }
+.textLayer .endOfContent { display: block; position: absolute; inset: 100% 0 0; z-index: 0; cursor: default; user-select: none; }
+
+.pdf-empty { padding: 16px; opacity: 0.75; }
+.pdf-side-title { font-weight: bold; margin: 4px 0; display: flex; justify-content: space-between; gap: 6px; }
+.pdf-share { display: flex; justify-content: space-between; gap: 4px; padding: 2px 0; }
+.pdf-share.current { font-weight: bold; }
+.pdf-shares { margin-bottom: 12px; }
+.pdf-link { background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; text-align: left; }
+.pdf-danger { color: #ef9a9a; }
+.pdf-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+.pdf-note-list { list-style: none; margin: 0; padding: 0; }
+.pdf-note-list button { width: 100%; text-align: left; margin-bottom: 4px; display: block; }
+.pdf-note-meta { opacity: 0.65; font-size: 11px; }
+.pdf-note-preview { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pdf-note-detail textarea { width: 100%; box-sizing: border-box; min-height: 70px; margin: 6px 0; }
+.pdf-note-head { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.pdf-note-head .pdf-link { margin-left: auto; }
+.pdf-note-text { white-space: pre-wrap; }
+.pdf-row { display: flex; gap: 4px; margin: 4px 0; }
+.pdf-row input { flex: 1; min-width: 0; }
+.pdf-replies { margin-top: 8px; }
+.pdf-reply { padding: 3px 0; border-top: 1px solid var(--nordvik-border-color, #444); white-space: pre-wrap; }
+
+.pdf-picker { padding: 12px 16px; }
+.pdf-upload {
+  display: block; padding: 18px; border: 2px dashed var(--nordvik-border-color, #555);
+  border-radius: 6px; text-align: center; cursor: pointer;
+}
+.pdf-upload input { display: block; margin: 0 auto 6px; }
+.pdf-file-list { list-style: none; padding: 0; }
+.pdf-file-list button { width: 100%; text-align: left; margin-bottom: 4px; }
