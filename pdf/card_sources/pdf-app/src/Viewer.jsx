@@ -36,7 +36,9 @@ function SourcePicker({ api, onPicked }) {
     const key = `pdf_src_${randomHex()}.pdf`;
     try {
       // Into the server's file storage: parts of it are then read without loading it whole.
-      await api.Resources.Global.Create(key, file, file.name, PDF, { storage: 'file' });
+      // A big file goes up in parts; the bar follows them.
+      await api.Resources.Upload(file, { key, name: file.name, mimeType: PDF, global: true, storage: 'file' },
+        (f) => setBusy(`Uploading ${file.name} (${kb(file.size)})… ${Math.round(f * 100)}%`));
     } catch (e) { setBusy(`The upload failed: ${e?.message ?? e}`); return; }
     await pick({ key, name: file.name });
   };

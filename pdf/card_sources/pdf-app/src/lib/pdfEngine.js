@@ -5,9 +5,8 @@
 // workers as IIFE. eval is never used (isEvalSupported: false).
 import * as pdfjs from 'pdfjs-dist';
 import PdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?worker&inline';
-import { createRangeReader } from './rangeReader.mjs';
 
-// pdf.js asks for parts in multiples of this; each is one ReadRange (and one cache entry).
+// pdf.js asks for parts in multiples of this.
 export const CHUNK = 256 * 1024;
 const FIRST = 2 * CHUNK; // the start of the file: its header, and usually page 1
 
@@ -30,33 +29,30 @@ export async function openPdf(data) {
 
 /**
  * Opens a game resource ({ id } or { key }) as a PDF, reading only the parts pdf.js needs for
- * the pages it shows (CardAPI.Resources.ReadRange), never the whole file at once.
- * onBytes(totalFetched) follows how much has come so far.
+ * the pages it shows (CardAPI Resources.Open: the app fetches and caches the pieces).
+ * onBytes(totalRead) follows how much has been read so far.
  */
 export async function openPdfFromResource(api, ref, { onBytes } = {}) {
   ensureWorker();
-  const first = await api.Resources.ReadRange(ref, 0, FIRST);
-  if (!first?.bytes?.length) throw new Error('The file is gone from the game.');
-  const total = first.total;
-  let fetched = first.bytes.length;
-  onBytes?.(fetched);
-  if (total <= first.bytes.length) return pdfjs.getDocument({ data: first.bytes, ...OPTIONS }).promise;
+  const file = await api.Resources.Open(ref);
+  if (!file) throw new Error('The file is gone from the game.');
+  let read = 0;
+  const readPart = async (start, end) => {
+    const bytes = await file.read(start, end);
+    read += bytes.length;
+    onBytes?.(read);
+    return bytes;
+  };
+  const first = await readPart(0, Math.min(FIRST, file.size));
+  if (file.size <= first.length) return pdfjs.getDocument({ data: first, ...OPTIONS }).promise;
 
-  const reader = createRangeReader(async (start, length) => {
-    const part = await api.Resources.ReadRange(ref, start, length);
-    if (part?.bytes) { fetched += part.bytes.length; onBytes?.(fetched); }
-    return part;
-  }, CHUNK, total);
-
-  const transport = new pdfjs.PDFDataRangeTransport(total, first.bytes);
+  const transport = new pdfjs.PDFDataRangeTransport(file.size, first);
   transport.requestDataRange = (begin, end) => {
-    reader.read(begin, end)
+    readPart(begin, end)
       .then((bytes) => transport.onDataRange(begin, bytes))
       .catch((e) => console.warn('PDF: part of the file could not be read', begin, end, e?.message));
   };
-  return pdfjs.getDocument({
-    range: transport, rangeChunkSize: CHUNK, disableAutoFetch: true, ...OPTIONS,
-  }).promise;
+  return pdfjs.getDocument({ range: transport, rangeChunkSize: CHUNK, disableAutoFetch: true, ...OPTIONS }).promise;
 }
 
 export { pdfjs };
