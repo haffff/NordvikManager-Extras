@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/card.json",
   "name": "PDF",
-  "description": "The pages the GM shows, opened for every player. Opened with { presentationId }.",
+  "description": "A PDF the GM shared, opened for every player. Opened with { documentId }.",
   "key": "pdf_viewer",
   "mainResource": "pdf_index.html",
   "additionalResources": [

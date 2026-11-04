@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/card.json",
   "name": "PDF Document",
-  "description": "A PDF for the GM: read the whole file, pick pages and show them to the players. Never shared itself: players get the pages you show in its presentation.",
+  "description": "A PDF: read it in the game, share it with the players, present (they follow your scrolling) and annotate it together. Only the parts of the file on screen are downloaded.",
   "key": "pdf_document",
   "mainResource": "pdf_index.html",
   "additionalResources": [
@@ -11,7 +11,9 @@
   "properties": [
     { "name": "pdf_kind", "value": "document" },
     { "name": "pdf_source", "value": "" },
-    { "name": "pdf_presentation", "value": "" },
+    { "name": "pdf_shared", "value": "" },
+    { "name": "pdf_view", "value": "" },
+    { "name": "pdf_annotations", "value": "[]" },
     { "name": "app_styles", "value": "true" }
   ]
 }

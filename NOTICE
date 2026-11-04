@@ -28,9 +28,6 @@ them.
 PDF Viewer (pdf/) bundles into Resources/pdf-app.js:
 - PDF.js (pdfjs-dist), (C) Mozilla Foundation, under the Apache License 2.0
   (https://github.com/mozilla/pdf.js/blob/master/LICENSE);
-- pdf-lib, (C) Andrew Dillon, under the MIT License, with its dependencies @pdf-lib/standard-fonts
-  and @pdf-lib/upng (MIT), pako (MIT and Zlib)
-  and tslib (0BSD);
 - React and React DOM, (C) Meta Platforms, Inc. and affiliates, under the MIT License.
 
 Poll (poll/) bundles into Resources/poll-app.js:

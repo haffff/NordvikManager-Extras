@@ -4,13 +4,13 @@ import { decodeAnnotations } from './lib/model.mjs';
 import { PROPS } from '../../../include_sources/pdf.mjs';
 
 /**
- * The presentation's notes and the ways to change them. Every change goes through the
- * annotate action (players can only read the presentation; the server checks the rest).
+ * The document's notes and the ways to change them. Every change goes through the annotate
+ * action (players can only read the document; the server checks the rest).
  */
-export function useNotes(api, presentationId) {
-  const raw = useProperty(api, presentationId, PROPS.annotations);
+export function useNotes(api, documentId) {
+  const raw = useProperty(api, documentId, PROPS.annotations);
   const { byId, byPage } = useMemo(() => decodeAnnotations(raw || '[]'), [raw]);
-  const send = (op, extra) => presentationId && fire(api, 'annotate', { presentationId, op, ...extra });
+  const send = (op, extra) => documentId && fire(api, 'annotate', { documentId, op, ...extra });
   return {
     byId,
     byPage,

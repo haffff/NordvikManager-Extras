@@ -1,26 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { decodeShares, decodeAnnotations, decodeView, shareForPage, pageOfShare, indexInShare, presenterView } from './model.mjs';
-
-const shareRows = JSON.stringify([
-  { id: 'r1', fields: { sid: 'a'.repeat(32), title: 'Cellar', pages: '[3,4]', resourceKey: `pdf_share_${'a'.repeat(32)}.pdf`, kind: 'copy', at: '2026-11-04T10:00:00Z' } },
-  { id: 'r2', fields: { sid: 'b'.repeat(32), title: 'Map', pages: '[4,10]', resourceKey: `pdf_share_${'b'.repeat(32)}.pdf`, kind: 'image', at: '2026-11-04T11:00:00Z' } },
-  { id: 'junk', fields: { sid: 'x', pages: 'nope' } },
-]);
-
-test('decodeShares reads the rows, newest last, and skips broken ones', () => {
-  const shares = decodeShares(shareRows);
-  assert.deepEqual(shares.map((s) => [s.sid[0], s.pages, s.kind]), [['a', [3, 4], 'copy'], ['b', [4, 10], 'image']]);
-  assert.deepEqual(decodeShares(''), []);
-});
-
-test('pages of a share: share index ↔ the document\'s own page number', () => {
-  const [cellar] = decodeShares(shareRows);
-  assert.equal(pageOfShare(cellar, 2), 4);
-  assert.equal(pageOfShare(cellar, 3), null);
-  assert.equal(indexInShare(cellar, 3), 1);
-  assert.equal(indexInShare(cellar, 9), null);
-});
+import { decodeAnnotations, decodeView, presenterView } from './model.mjs';
 
 test('decodeAnnotations parses shapes, groups by page and puts replies under their note', () => {
   const rows = JSON.stringify([
@@ -39,26 +19,14 @@ test('decodeAnnotations parses shapes, groups by page and puts replies under the
   assert.equal(byId.has('n5'), false);
 });
 
-test('decodeView: the GM\'s place, or null', () => {
-  assert.deepEqual(decodeView('{"shareId":"s","page":4,"scroll":0.5,"by":"gm","at":"t"}'), { shareId: 's', page: 4, scroll: 0.5, by: 'gm', at: 't' });
+test("decodeView: the GM's place, or null", () => {
+  assert.deepEqual(decodeView('{"page":4,"scroll":0.5,"by":"gm","at":"t"}'), { page: 4, scroll: 0.5, by: 'gm', at: 't' });
   assert.equal(decodeView(''), null);
   assert.equal(decodeView('{"page":"x"}'), null);
 });
 
-test('shareForPage prefers the share players are on, then the newest that has the page', () => {
-  const shares = decodeShares(shareRows);
-  assert.equal(shareForPage(shares, 4, 'a'.repeat(32)).sid[0], 'a');
-  assert.equal(shareForPage(shares, 4, null).sid[0], 'b');
-  assert.equal(shareForPage(shares, 3, 'b'.repeat(32)).sid[0], 'a');
-  assert.equal(shareForPage(shares, 7, null), null);
-});
-
-test('presenterView: where the GM\'s scrolling moves the players; null on pages they don\'t have', () => {
-  const shares = decodeShares(shareRows);
-  const current = { shareId: 'a'.repeat(32), page: 3, scroll: 0 };
-  assert.deepEqual(presenterView(shares, current, 4, 0.25, 'gm'), { shareId: 'a'.repeat(32), page: 4, scroll: 0.25, by: 'gm' });
-  assert.deepEqual(presenterView(shares, current, 10, 0.123456, 'gm'), { shareId: 'b'.repeat(32), page: 10, scroll: 0.1235, by: 'gm' });
-  assert.equal(presenterView(shares, current, 7, 0, 'gm'), null);
-  // nothing changed (enough): nothing to send
-  assert.equal(presenterView(shares, { ...current, page: 4, scroll: 0.25 }, 4, 0.2501, 'gm'), null);
+test("presenterView: where the GM's scrolling moves the players; null when they're (nearly) there", () => {
+  assert.deepEqual(presenterView({ page: 3, scroll: 0 }, 4, 0.25, 'gm'), { page: 4, scroll: 0.25, by: 'gm' });
+  assert.deepEqual(presenterView(null, 250, 0.123456, 'gm'), { page: 250, scroll: 0.1235, by: 'gm' });
+  assert.equal(presenterView({ page: 4, scroll: 0.25 }, 4, 0.2501, 'gm'), null);
 });

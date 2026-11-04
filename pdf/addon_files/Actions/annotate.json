@@ -1,14 +1,47 @@
 {
   "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
   "name": "annotate",
-  "description": "Adds, changes or removes a note on shared pages, for anyone who can read the presentation; only the note's author or a GM changes or removes it. Args: presentationId, op (add, update, remove), itemId, annotation (JSON: kind, page, shape, color, text, parent).",
+  "description": "Adds, changes or removes a note on a PDF, for anyone who can read it; only the note's author or a GM changes or removes it. Args: documentId, op (add, update, remove), itemId, annotation (JSON: kind, page, shape, color, text, parent).",
   "hook": 0,
   "prefix": "pdf",
   "genericPermission": 0,
   "gmPermission": 31,
   "content": [
-    { "Type": "RequirePermission", "Data": { "Label": "Only who can see the pages", "EntityId": "%presentationId%", "Permission": "Read", "StopIfDenied": "true" } },
-    { "Type": "RunScript", "Data": { "Label": "Check and do it", "Include": "pdf_pdf.js", "Script": "return annotate(game, vars);" } },
-    { "Type": "If", "Data": { "Label": "Anything to say?", "Condition": "'%hasNotice%' = 'yes'", "Then": [ { "Type": "SendChat", "Data": { "Label": "Whisper it", "Template": "Text", "Title": "PDF", "Message": "%notice%", "Player": "%playerId%" } } ] } }
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "Only who can see the pages",
+        "EntityId": "%documentId%",
+        "Permission": "Read",
+        "StopIfDenied": "true"
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Check and do it",
+        "Include": "pdf_pdf.js",
+        "Script": "return annotate(game, vars);"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Anything to say?",
+        "Condition": "'%hasNotice%' = 'yes'",
+        "Then": [
+          {
+            "Type": "SendChat",
+            "Data": {
+              "Label": "Whisper it",
+              "Template": "Text",
+              "Title": "PDF",
+              "Message": "%notice%",
+              "Player": "%playerId%"
+            }
+          }
+        ]
+      }
+    }
   ]
 }
