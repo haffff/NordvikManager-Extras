@@ -102,9 +102,9 @@ export function Viewer({ api, documentId, player }) {
     return () => { live = false; };
   }, [api, refKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // following: go where the GM is
+  // following: go where the presenter is (a GM, a co-GM; never your own scrolling)
   useEffect(() => {
-    if (!follow || !view || !doc) return;
+    if (!follow || !view || !doc || view.by === player.me.id) return;
     setGoto((g) => ({ page: view.page, scroll: view.scroll, seq: (g?.seq ?? 0) + 1, smooth: true }));
   }, [follow, view, doc]);
 
@@ -158,15 +158,17 @@ export function Viewer({ api, documentId, player }) {
           {isGm && (shared
             ? <button type="button" onClick={() => fire(api, 'show', { documentId })} title="Open it again for players who closed it">Open for everyone</button>
             : <button type="button" onClick={() => fire(api, 'share', { documentId })} title="Every player can open and read the whole PDF">Share with players</button>)}
-          {isGm ? (
-            <label className="pdf-follow" title="Players following you scroll with you">
-              <input type="checkbox" checked={presenting} disabled={!shared} onChange={(e) => setPresenting(e.target.checked)} /> Present
-            </label>
-          ) : (
-            <label className="pdf-follow" title="Scroll along with the GM">
-              <input type="checkbox" checked={follow} onChange={(e) => setFollow(e.target.checked)} /> Follow GM
+          {/* Any GM (owner or co-GM) may present; everyone, co-GMs too, may follow whoever does. */}
+          {isGm && (
+            <label className="pdf-follow" title="Everyone following scrolls with you">
+              <input type="checkbox" checked={presenting} disabled={!shared}
+                onChange={(e) => { setPresenting(e.target.checked); if (e.target.checked) setFollow(false); }} /> Present
             </label>
           )}
+          <label className="pdf-follow" title="Scroll along with whoever presents">
+            <input type="checkbox" checked={follow}
+              onChange={(e) => { setFollow(e.target.checked); if (e.target.checked) setPresenting(false); }} /> Follow presenter
+          </label>
         </div>
       </div>
       <Tools tool={tool} setTool={setTool} color={color} setColor={setColor} zoom={zoom} setZoom={setZoom} hasText />

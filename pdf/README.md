@@ -8,8 +8,8 @@ scrolling, and everyone can highlight, draw, pin notes and reply. Addon key `pdf
 | Where | What |
 |---|---|
 | **Addons → PDF → New PDF** (GM) | Makes a PDF Document card (Cards panel, folder `PDF`) and opens it. Pick a PDF from the Materials panel, or upload one in the card. |
-| The document (GM) | **Share with players** lets every player open it, and opens it for them. **Open for everyone** opens it again for players who closed it. **Present** makes players who follow you scroll with you. |
-| The player window | **Follow GM** keeps you where the GM is; untick it to read on your own. Players also find the shared PDF in their Cards panel. |
+| The document (GM) | **Share with players** lets every player open it, and opens it for them. **Open for everyone** opens it again for players who closed it. **Present** makes everyone who follows scroll with you (any GM can present, co-GMs too). |
+| The player window | **Follow presenter** keeps you where the presenting GM is; untick it to read on your own. It's on for players and off for GMs, who can tick it to follow another GM. Players also find the shared PDF in their Cards panel. |
 | Tools (everyone) | **Highlight** (select text), **Marker** (drag over an area), **Box**, **Pin** (click), **Draw**, and a colour. **Select** a note to add text, reply, or delete it. |
 
 - Sharing a PDF shares all of it: players can read any page, not only the ones you present.
