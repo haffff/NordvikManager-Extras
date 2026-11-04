@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "create_menus",
+  "description": "Adds Addons → PDF → New PDF for GMs as the game loads.",
+  "hook": 5,
+  "prefix": "pdf",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "AddMenuItem",
+      "Data": {
+        "Label": "New PDF (GMs)",
+        "Name": "pdf_new",
+        "UiName": "New PDF",
+        "Action": "pdf/new_document",
+        "Location": "addons",
+        "OnlyTriggeringPlayer": true,
+        "GmOnly": true,
+        "Icon": "FaFilePdf",
+        "SubMenuId": "pdf_menu",
+        "SubMenuName": "PDF"
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "new_document",
+  "description": "Makes a PDF Document card (in the Cards panel folder PDF) and opens it for the GM who asked, to pick or upload the PDF. GM only.",
+  "hook": 0,
+  "prefix": "pdf",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    { "Type": "RequirePermission", "Data": { "Label": "GMs only", "EntityId": "%gameId%", "Permission": "Edit", "StopIfDenied": "true" } },
+    {
+      "Type": "CreateCard",
+      "Data": {
+        "Label": "A new PDF Document",
+        "Name": "PDF",
+        "TemplateId": "%q:card[PDF Document].id%",
+        "Owner": "%playerId%",
+        "Folder": "PDF",
+        "Output": "newCardId"
+      }
+    },
+    {
+      "Type": "RunClientCommand",
+      "Data": {
+        "Label": "Open it for the GM",
+        "Panel": "Game",
+        "Command": "CreateNewPanel",
+        "Player": "%playerId%",
+        "Data": "{\"type\": \"CardPanel\", \"props\": {\"id\": \"%newCardId%\"}}"
+      }
+    }
+  ]
+}
