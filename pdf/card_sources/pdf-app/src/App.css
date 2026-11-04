@@ -124,3 +124,17 @@ input, textarea {
 .pdf-upload input { display: block; margin: 0 auto 6px; }
 .pdf-file-list { list-style: none; padding: 0; }
 .pdf-file-list button { width: 100%; text-align: left; margin-bottom: 4px; }
+
+.pdf-search { flex: 1 1 220px; }
+.pdf-search input { flex: 1; min-width: 120px; }
+.pdf-search-status { white-space: nowrap; }
+.pdf-hit { fill: #ff9800; fill-opacity: 0.3; pointer-events: none; }
+.pdf-hit.current { fill: #ff5722; fill-opacity: 0.45; stroke: #e64a19; stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.pdf-search-results { margin-bottom: 12px; max-height: 45vh; overflow: auto; }
+.pdf-search-results ul { list-style: none; margin: 0; padding: 0; }
+.pdf-search-hit {
+  display: block; width: 100%; text-align: left; background: none; border: 0; padding: 3px 4px;
+  cursor: pointer; font-size: 0.85em; color: inherit; border-radius: 3px;
+}
+.pdf-search-hit.current, .pdf-search-hit:hover { background: var(--nordvik-surface-raised, #2c2c2c); }
+.pdf-search-hit mark { background: #ff9800; color: #000; }

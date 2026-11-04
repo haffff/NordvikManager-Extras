@@ -30,7 +30,7 @@ function Note({ note, selected, onSelect, tool }) {
 }
 
 // Memoized: a page redraws only when its own notes, its selection, the tool or its size change.
-const Page = React.memo(function Page({ pdfDoc, index, docPage, width, textLayer, notes, tool, color, selectedId, onSelect, onCreate, registerEl, estimate }) {
+const Page = React.memo(function Page({ pdfDoc, index, docPage, width, textLayer, notes, tool, color, selectedId, onSelect, onCreate, registerEl, estimate, hits, currentHit }) {
   const holder = useRef(null);
   const canvasRef = useRef(null);
   const textRef = useRef(null);
@@ -116,6 +116,9 @@ const Page = React.memo(function Page({ pdfDoc, index, docPage, width, textLayer
       {textLayer && <div className="textLayer" ref={textRef} style={{ pointerEvents: tool === 'text' ? 'auto' : 'none' }} />}
       <svg className="pdf-overlay" viewBox="0 0 1 1" preserveAspectRatio="none">
         {(notes || []).map((n) => <Note key={n.id} note={n} selected={n.id === selectedId} onSelect={onSelect} tool={tool} />)}
+        {(hits || []).map((h) => h.rects.map((r, i) => (
+          <rect key={`${h.id}-${i}`} className={`pdf-hit${h.id === currentHit ? ' current' : ''}`} x={r[0]} y={r[1]} width={r[2]} height={r[3]} />
+        )))}
         {draftShape}
       </svg>
       {(notes || []).filter((n) => n.kind === 'pin').map((n) => (
@@ -137,9 +140,10 @@ const Page = React.memo(function Page({ pdfDoc, index, docPage, width, textLayer
 /**
  * props: pdfDoc, pages (doc page per index), notesByPage, tool, color, selectedId, onSelect,
  * onCreate(annotation), textLayer, zoom, onPosition({ page, scroll }) while scrolling,
- * goto ({ page, scroll, seq }: scroll there when seq changes).
+ * goto ({ page, scroll, seq }: scroll there when seq changes), hitsByPage (search hits per page,
+ * each { id, rects }), currentHit (the hit id to stress).
  */
-export const PdfPages = React.memo(function PdfPages({ pdfDoc, pages, notesByPage, tool, color, selectedId, onSelect, onCreate, textLayer, zoom, onPosition, goto }) {
+export const PdfPages = React.memo(function PdfPages({ pdfDoc, pages, notesByPage, tool, color, selectedId, onSelect, onCreate, textLayer, zoom, onPosition, goto, hitsByPage, currentHit }) {
   const scroller = useRef(null);
   const els = useRef(new Map());
   const [width, setWidth] = useState(0);
@@ -210,6 +214,7 @@ export const PdfPages = React.memo(function PdfPages({ pdfDoc, pages, notesByPag
           notes={notesByPage.get(page)} tool={tool} color={color} onSelect={onSelect}
           selectedId={notesByPage.get(page)?.some((n) => n.id === selectedId) ? selectedId : null}
           onCreate={onCreate} registerEl={registerEl} estimate={estimate}
+          hits={hitsByPage?.get(page)} currentHit={hitsByPage?.get(page)?.some((h) => h.id === currentHit) ? currentHit : null}
         />
       ))}
     </div>

@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useProperty, fire, idOf } from './api.js';
 import { useNotes } from './useNotes.js';
+import { useSearch } from './useSearch.js';
 import { decodeView, presenterView } from './lib/model.mjs';
 import { openPdfFromResource } from './lib/pdfEngine.js';
 import { PROPS, parseJson, truthy } from '../../../include_sources/pdf.mjs';
 import { PdfPages } from './components/PdfPages.jsx';
 import { Tools } from './components/Tools.jsx';
 import { Notes } from './components/Notes.jsx';
+import { SearchBar, SearchResults } from './components/Search.jsx';
 
 const PDF = 'application/pdf';
 const PRESENT_EVERY_MS = 300;
@@ -125,6 +127,33 @@ export function Viewer({ api, documentId, player }) {
     return () => clearTimeout(pending.current);
   }, [presenting, position, view]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // searching: hits drawn on the pages; the current one is scrolled to
+  const search = useSearch(doc);
+  const [hitId, setHitId] = useState(null);
+  const searchFrom = useRef(1);
+  const hitIndex = search.hits.findIndex((h) => h.id === hitId);
+  const startSearch = useCallback((text) => { searchFrom.current = position.page; setHitId(null); search.search(text, position.page); }, [position.page, search.search]); // eslint-disable-line react-hooks/exhaustive-deps
+  const clearSearch = useCallback(() => { setHitId(null); search.clear(); }, [search.clear]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (hitId || !search.hits.length) return;
+    setHitId((search.hits.find((h) => h.page >= searchFrom.current) ?? search.hits[0]).id);
+  }, [search.hits, hitId]);
+  useEffect(() => {
+    const h = hitId && search.hits.find((x) => x.id === hitId);
+    if (!h) return;
+    setFollow(false);
+    setGoto((g) => ({ page: h.page, scroll: Math.max(0, h.rects[0][1] - 0.15), seq: (g?.seq ?? 0) + 1, smooth: true }));
+  }, [hitId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const stepHit = (d) => {
+    const n = search.hits.length;
+    if (!n) return;
+    setHitId(search.hits[((hitIndex < 0 ? 0 : hitIndex + d) % n + n) % n].id);
+  };
+  const highlightHit = () => {
+    const h = search.hits[hitIndex];
+    if (h) addNote({ kind: 'highlight', page: h.page, shape: h.rects.slice(0, 100), color: colorRef.current });
+  };
+
   const pageNumbers = useMemo(() => (doc ? Array.from({ length: doc.numPages }, (_, i) => i + 1) : []), [doc]);
   // Stable callbacks: pages and the notes panel only redraw when their own things change.
   const colorRef = useRef(color);
@@ -171,17 +200,20 @@ export function Viewer({ api, documentId, player }) {
           </label>
         </div>
       </div>
-      <Tools tool={tool} setTool={setTool} color={color} setColor={setColor} zoom={zoom} setZoom={setZoom} hasText />
+      <Tools tool={tool} setTool={setTool} color={color} setColor={setColor} zoom={zoom} setZoom={setZoom} hasText>
+        {doc && <SearchBar search={search} currentIndex={hitIndex} onSearch={startSearch} onStep={stepHit} onClear={clearSearch} onHighlight={highlightHit} />}
+      </Tools>
       {status && <div className="pdf-status">{status}</div>}
       <div className="pdf-body">
         {doc ? (
           <PdfPages
             pdfDoc={doc} pages={pageNumbers} notesByPage={notes.byPage} tool={tool} color={color}
             selectedId={selectedId} onSelect={setSelectedId} onCreate={create} textLayer zoom={zoom}
-            onPosition={setPosition} goto={goto}
+            onPosition={setPosition} goto={goto} hitsByPage={search.byPage} currentHit={hitId}
           />
         ) : <div className="pdf-empty">{status || 'Opening the PDF…'}</div>}
         <aside className="pdf-side">
+          <SearchResults search={search} currentId={hitId} onPick={setHitId} />
           <Notes byId={notes.byId} pages={pageNumbers} selectedId={selectedId} me={player.me} isGm={isGm}
             onSelect={jumpTo} onEdit={editNote} onRemove={removeAndClose} onReply={replyNote} />
         </aside>
