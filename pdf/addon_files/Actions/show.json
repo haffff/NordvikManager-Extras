@@ -1,0 +1,47 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "show",
+  "description": "Opens a shared PDF for the other players again. GM only. Args: documentId.",
+  "hook": 0,
+  "prefix": "pdf",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    {
+      "Type": "RequirePermission",
+      "Data": {
+        "Label": "GMs only",
+        "EntityId": "%gameId%",
+        "Permission": "Edit",
+        "StopIfDenied": "true"
+      }
+    },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Check and do it",
+        "Include": "pdf_pdf.js",
+        "Script": "return showAgain(game, vars);"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Anything to say?",
+        "Condition": "'%hasNotice%' = 'yes'",
+        "Then": [
+          {
+            "Type": "SendChat",
+            "Data": {
+              "Label": "Whisper it",
+              "Template": "Text",
+              "Title": "PDF",
+              "Message": "%notice%",
+              "Player": "%playerId%"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

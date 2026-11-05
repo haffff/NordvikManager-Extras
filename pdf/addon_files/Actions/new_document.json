@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "new_document",
+  "description": "Opens the PDF picker for the GM who asked; picking or uploading a PDF there makes the document card (create_document), named after the file. GM only.",
+  "hook": 0,
+  "prefix": "pdf",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    { "Type": "RequirePermission", "Data": { "Label": "GMs only", "EntityId": "%gameId%", "Permission": "Edit", "StopIfDenied": "true" } },
+    {
+      "Type": "ShowView",
+      "Data": {
+        "Label": "Open the picker for the GM",
+        "ViewKey": "pdf_viewer",
+        "Player": "%playerId%",
+        "Data": "{\"newDocument\": true}"
+      }
+    }
+  ]
+}
