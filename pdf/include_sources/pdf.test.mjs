@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { toIncludeScript } from '../../scripts/includeScript.mjs';
-import { PROPS, parseRows, validateAnnotation, canEditAnnotation, shareDocument, showAgain, annotate } from './pdf.mjs';
+import { PROPS, parseRows, validateAnnotation, canEditAnnotation, shareDocument, showAgain, annotate, documentName, newDocument } from './pdf.mjs';
 
 const GAME = '00000000-0000-4000-8000-000000000001';
 const GM = '00000000-0000-4000-8000-0000000000a1';
@@ -27,9 +27,17 @@ function fakeGame() {
       return props.has(k) ? props.get(k) : (fallback == null ? '' : String(fallback));
     },
     setProperty(parent, name, value) { props.set(key(parent, name), String(value)); },
-    find(what) {
+    cards: [{ id: '00000000-0000-4000-8000-0000000000e1', name: 'PDF Document', key: 'pdf_document', isTemplate: true }],
+    created: [],
+    find(what, options) {
       if (what === 'players') return game.players.slice();
+      if (what === 'cards') return game.cards.filter((c) => (options && options.includeTemplates) || !c.isTemplate);
       throw new Error('fake find: ' + what);
+    },
+    createCard(options) {
+      const id = `00000000-0000-4000-8000-${String(0xc0 + game.created.length).padStart(12, '0')}`;
+      game.created.push({ id, ...options });
+      return id;
     },
     step(type, data) {
       game.steps.push({ type, data });
@@ -83,6 +91,56 @@ test('canEditAnnotation: the author or a GM', () => {
   assert.equal(canEditAnnotation(row, ANA.toUpperCase(), false), true);
   assert.equal(canEditAnnotation(row, BO, false), false);
   assert.equal(canEditAnnotation(row, BO, true), true);
+});
+
+// ── a new document (GM) ──────────────────────────────────────────────────────
+
+test('documentName is the file name without .pdf, cleaned and kept short', () => {
+  assert.equal(documentName('Monster Manual.pdf'), 'Monster Manual');
+  assert.equal(documentName('  The Old Mill.PDF '), 'The Old Mill');
+  assert.equal(documentName('notes.v2.pdf'), 'notes.v2');
+  assert.equal(documentName('handout'), 'handout');
+  assert.equal(documentName('a' + String.fromCharCode(7) + 'b.pdf'), 'ab');
+  assert.equal(documentName('x'.repeat(300) + '.pdf').length, 100);
+  assert.equal(documentName(''), 'PDF');
+  assert.equal(documentName('.pdf'), 'PDF');
+  assert.equal(documentName(null), 'PDF');
+});
+
+test('newDocument makes a card named after the file, with the PDF already picked', () => {
+  const game = fakeGame();
+  const source = { key: 'pdf_src_' + 'ab'.repeat(16) + '.pdf', name: 'Monster Manual.pdf', pageCount: 352 };
+  const out = newDocument(game, asGm({ source: JSON.stringify(source) }));
+  assert.equal(out.failed, 'no', out.notice);
+
+  assert.equal(game.created.length, 1);
+  const card = game.created[0];
+  assert.equal(card.name, 'Monster Manual');
+  assert.equal(card.templateId, '00000000-0000-4000-8000-0000000000e1');
+  assert.equal(card.owner, GM);
+  assert.equal(card.folder, 'PDF');
+  assert.equal(out.documentId, card.id);
+  assert.deepEqual(JSON.parse(game.getProperty(card.id, PROPS.source)), source);
+});
+
+test('newDocument takes a Materials PDF by id', () => {
+  const game = fakeGame();
+  const out = newDocument(game, asGm({ source: JSON.stringify({ resourceId: DOC, name: 'Map pack.pdf', pageCount: 3 }) }));
+  assert.equal(out.failed, 'no', out.notice);
+  assert.equal(game.created[0].name, 'Map pack');
+});
+
+test('newDocument refuses players, a missing template and a source that is no PDF', () => {
+  const ok = { key: 'pdf_src_' + 'ab'.repeat(16) + '.pdf', name: 'a.pdf', pageCount: 2 };
+  const game = fakeGame();
+  assert.equal(newDocument(game, asAna({ source: JSON.stringify(ok) })).failed, 'yes');
+  for (const bad of ['', 'nope', '{}', JSON.stringify({ ...ok, key: 'other_key' }), JSON.stringify({ ...ok, pageCount: 0 }),
+    JSON.stringify({ ...ok, pageCount: 'x' }), JSON.stringify({ resourceId: 'not-a-guid', name: 'a.pdf', pageCount: 2 })]) {
+    assert.equal(newDocument(game, asGm({ source: bad })).failed, 'yes', bad);
+  }
+  game.cards.length = 0;
+  assert.equal(newDocument(game, asGm({ source: JSON.stringify(ok) })).failed, 'yes');
+  assert.equal(game.created.length, 0);
 });
 
 // ── sharing (GM) ─────────────────────────────────────────────────────────────

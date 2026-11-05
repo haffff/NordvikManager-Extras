@@ -19,12 +19,17 @@ export const PROPS = {
   annotations: 'pdf_annotations',
 };
 export const VIEWER_VIEW = 'pdf_viewer';
+export const DOCUMENT_TEMPLATE = 'pdf_document';
+export const DOCUMENT_FOLDER = 'PDF';
+export const MAX_NAME = 100;
+export const MAX_PAGES = 100000;
 export const ANNOTATION_KINDS = ['highlight', 'box', 'pin', 'ink', 'reply'];
 export const MAX_TEXT = 2000;
 export const MAX_RECTS = 100;
 export const MAX_POINTS = 1500;
 export const MAX_ANNOTATIONS = 2000;
 const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+const UPLOAD_KEY = /^pdf_src_[0-9a-f]{32}\.pdf$/;
 const ROW_ID = /^[A-Za-z0-9_-]{1,64}$/;
 const COLOR = /^#[0-9a-fA-F]{6}$/;
 
@@ -173,6 +178,41 @@ export function showAgain(game, vars) {
   if (!truthy(game.getProperty(vars.documentId, PROPS.shared, ''))) return fail('Share the PDF first.');
   showToOthers(game, vars, vars.documentId);
   return outcome({ ok: true });
+}
+
+/** A document card's name from its file name: without ".pdf", cleaned, at most MAX_NAME characters; "PDF" when nothing is left. */
+export function documentName(fileName) {
+  const t = Array.from(text(fileName)).filter((c) => c.charCodeAt(0) >= 32 && c.charCodeAt(0) !== 127).join('').trim().replace(/[.]pdf$/i, '').trim();
+  return t.slice(0, MAX_NAME).trim() || 'PDF';
+}
+
+/** A picked PDF ({ resourceId | key, name, pageCount }) checked, or null: a Materials file by id or a file uploaded by the picker. */
+function validSource(value) {
+  const s = parseJson(value);
+  if (!s || typeof s !== 'object') return null;
+  const pageCount = Number(s.pageCount);
+  if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > MAX_PAGES) return null;
+  const name = cleanText(s.name, 500) || '';
+  if (isGuid(text(s.resourceId))) return { resourceId: text(s.resourceId), name, pageCount };
+  if (UPLOAD_KEY.test(text(s.key))) return { key: text(s.key), name, pageCount };
+  return null;
+}
+
+function templateId(game, key) {
+  const found = (game.find('cards', { includeTemplates: true }) || []).filter((c) => c.key === key && c.isTemplate);
+  return found.length ? text(found[0].id) : '';
+}
+
+/** The GM picked a PDF for a new document: a card named after the file, the PDF already set. vars: source (JSON). Out: documentId */
+export function newDocument(game, vars) {
+  if (!truthy(vars.playerIsGm)) return fail('Only the GM can add a PDF.');
+  const source = validSource(vars.source);
+  if (!source) return fail("That isn't a PDF the viewer can open.");
+  const template = templateId(game, DOCUMENT_TEMPLATE);
+  if (!template) return fail("The PDF Viewer's template is missing: reinstall the addon.");
+  const documentId = text(game.createCard({ name: documentName(source.name), templateId: template, owner: text(vars.playerId), folder: DOCUMENT_FOLDER }));
+  game.setProperty(documentId, PROPS.source, JSON.stringify(source));
+  return outcome({ ok: true, documentId });
 }
 
 // ── annotations ──────────────────────────────────────────────────────────────

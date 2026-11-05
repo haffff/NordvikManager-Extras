@@ -7,7 +7,7 @@ scrolling, and everyone can highlight, draw, pin notes and reply. Addon key `pdf
 
 | Where | What |
 |---|---|
-| **Addons → PDF → New PDF** (GM) | Makes a PDF Document card (Cards panel, folder `PDF`) and opens it. Pick a PDF from the Materials panel, or upload one in the card. |
+| **Addons → PDF → New PDF** (GM) | Pick a PDF from the Materials panel, or upload one. That makes a PDF Document card named after the file (Cards panel, folder `PDF`) and opens it. |
 | The document (GM) | **Share with players** lets every player open it, and opens it for them. **Open for everyone** opens it again for players who closed it. **Present** makes everyone who follows scroll with you (any GM can present, co-GMs too). |
 | The player window | **Follow presenter** keeps you where the presenting GM is; untick it to read on your own. It's on for players and off for GMs, who can tick it to follow another GM. Players also find the shared PDF in their Cards panel. |
 | Search (everyone) | Type in **Search the PDF** and press Enter: matches are marked on the pages and listed on the right with the words around them. Enter / Shift+Enter (or ↑ ↓) go to the next / previous one, **Highlight it** turns the current one into a highlight everyone sees, Escape clears. The search starts from your page; it stops after 500 matches. |

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
+  "name": "create_document",
+  "description": "Makes a PDF Document card (in the Cards panel folder PDF) named after the picked file, with the PDF already set, and opens it for the GM. GM only. Args: source (JSON: resourceId or key, name, pageCount).",
+  "hook": 0,
+  "prefix": "pdf",
+  "genericPermission": 0,
+  "gmPermission": 31,
+  "content": [
+    { "Type": "RequirePermission", "Data": { "Label": "GMs only", "EntityId": "%gameId%", "Permission": "Edit", "StopIfDenied": "true" } },
+    {
+      "Type": "RunScript",
+      "Data": {
+        "Label": "Check and make the card",
+        "Include": "pdf_pdf.js",
+        "Script": "return newDocument(game, vars);"
+      }
+    },
+    {
+      "Type": "If",
+      "Data": {
+        "Label": "Made it?",
+        "Condition": "'%failed%' = 'yes'",
+        "Then": [
+          {
+            "Type": "SendChat",
+            "Data": {
+              "Label": "Whisper why not",
+              "Template": "Text",
+              "Title": "PDF",
+              "Message": "%notice%",
+              "Player": "%playerId%"
+            }
+          }
+        ],
+        "Else": [
+          {
+            "Type": "RunClientCommand",
+            "Data": {
+              "Label": "Open it for the GM",
+              "Panel": "Game",
+              "Command": "CreateNewPanel",
+              "Player": "%playerId%",
+              "Data": "{\"type\": \"CardPanel\", \"props\": {\"id\": \"%documentId%\"}}"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

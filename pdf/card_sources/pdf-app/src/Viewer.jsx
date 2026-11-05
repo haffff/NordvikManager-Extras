@@ -18,7 +18,7 @@ const refOf = (source) => (source?.resourceId ? { id: source.resourceId } : sour
 const kb = (bytes) => (bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`);
 
 /** Choosing the PDF (GM): one from the Materials panel, or a file uploaded here. */
-function SourcePicker({ api, onPicked }) {
+export function SourcePicker({ api, onPicked }) {
   const [files, setFiles] = useState(null);
   const [busy, setBusy] = useState('');
   useEffect(() => { api.Resources.List({ mimeType: PDF }).then(setFiles).catch(() => setFiles([])); }, [api]);
