@@ -49,7 +49,15 @@ const Page = React.memo(function Page({ pdfDoc, index, docPage, width, textLayer
   }, []);
 
   useEffect(() => {
-    if (!visible || !pdfDoc || !width) return undefined;
+    if (!visible) {
+      // Scrolled well away: let go of the canvas's pixels (10+ MB a page at high DPI) and the
+      // text spans; the page draws again when it comes back.
+      const canvas = canvasRef.current;
+      if (canvas && canvas.width) { canvas.width = 0; canvas.height = 0; }
+      textRef.current?.replaceChildren();
+      return undefined;
+    }
+    if (!pdfDoc || !width) return undefined;
     let cancelled = false;
     let renderTask = null;
     let text = null;

@@ -36,7 +36,18 @@ export function decodeAnnotations(value) {
 export function decodeView(value) {
   const v = parseJson(value);
   if (!v || !Number.isInteger(v.page)) return null;
-  return { page: v.page, scroll: Number(v.scroll) || 0, by: String(v.by || ''), at: String(v.at || '') };
+  return { page: v.page, scroll: Number(v.scroll) || 0, by: String(v.by || ''), at: String(v.at || ''), since: Number(v.since) || 0 };
+}
+
+/**
+ * Whether a view comes from another presenter who should present instead of me (I started
+ * presenting at mySince): the one who ticked Present last, the larger id on a tie. Both
+ * screens work it out the same way, so exactly one goes on presenting.
+ */
+export function otherPresenterWins(view, me, mySince) {
+  if (!view || !view.by || view.by === me) return false;
+  const since = Number(view.since) || 0;
+  return since > mySince || (since === mySince && view.by > me);
 }
 
 /** The view to send when the GM, presenting, is on a page at a scroll fraction; null when it's (nearly) where players already are. */

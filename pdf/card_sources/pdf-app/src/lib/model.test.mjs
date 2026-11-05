@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { decodeAnnotations, decodeView, presenterView, withPending } from './model.mjs';
+import { decodeAnnotations, decodeView, presenterView, withPending, otherPresenterWins } from './model.mjs';
 
 test('decodeAnnotations parses shapes, groups by page and puts replies under their note', () => {
   const rows = JSON.stringify([
@@ -19,8 +19,20 @@ test('decodeAnnotations parses shapes, groups by page and puts replies under the
   assert.equal(byId.has('n5'), false);
 });
 
+// Two GMs ticking Present: the one who ticked last presents, the other stops (on both
+// screens the same answer, so they never take turns overwriting the place).
+test('otherPresenterWins: a view from another presenter who started later (ties: the larger id)', () => {
+  assert.equal(otherPresenterWins({ by: 'b', since: 200 }, 'a', 100), true);
+  assert.equal(otherPresenterWins({ by: 'b', since: 50 }, 'a', 100), false);
+  assert.equal(otherPresenterWins({ by: 'a', since: 900 }, 'a', 100), false); // my own
+  assert.equal(otherPresenterWins({ by: 'b', since: 100 }, 'a', 100), true);
+  assert.equal(otherPresenterWins({ by: 'a', since: 100 }, 'b', 100), false);
+  assert.equal(otherPresenterWins(null, 'a', 100), false);
+  assert.equal(decodeView('{"page":1,"scroll":0,"by":"b","since":5}').since, 5);
+});
+
 test("decodeView: the GM's place, or null", () => {
-  assert.deepEqual(decodeView('{"page":4,"scroll":0.5,"by":"gm","at":"t"}'), { page: 4, scroll: 0.5, by: 'gm', at: 't' });
+  assert.deepEqual(decodeView('{"page":4,"scroll":0.5,"by":"gm","at":"t"}'), { page: 4, scroll: 0.5, by: 'gm', at: 't', since: 0 });
   assert.equal(decodeView(''), null);
   assert.equal(decodeView('{"page":"x"}'), null);
 });

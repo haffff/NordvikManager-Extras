@@ -5,26 +5,27 @@
 // workers as IIFE. eval is never used (isEvalSupported: false).
 import * as pdfjs from 'pdfjs-dist';
 import PdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?worker&inline';
+import { retry } from './retry.mjs';
 
 // pdf.js asks for parts in multiples of this.
 export const CHUNK = 256 * 1024;
 const FIRST = 2 * CHUNK; // the start of the file: its header, and usually page 1
 
-let workerPort = null;
+// One worker for every document, handed to each as params.worker: pdf.js then never ends it
+// when a document is destroyed (it would, for a worker it made itself from a global port).
+let pdfWorker = null;
 
 function ensureWorker() {
-  if (workerPort) return;
-  workerPort = new PdfWorker();
-  pdfjs.GlobalWorkerOptions.workerPort = workerPort;
+  if (!pdfWorker) pdfWorker = new pdfjs.PDFWorker({ port: new PdfWorker() });
 }
 
-const OPTIONS = { isEvalSupported: false, useSystemFonts: true };
+const options = () => ({ isEvalSupported: false, useSystemFonts: true, worker: pdfWorker });
 
 /** Opens a PDF from bytes (ArrayBuffer/Uint8Array/Blob), e.g. a file just picked for upload. */
 export async function openPdf(data) {
   ensureWorker();
   const bytes = typeof data?.arrayBuffer === 'function' ? new Uint8Array(await data.arrayBuffer()) : new Uint8Array(data);
-  return pdfjs.getDocument({ data: bytes, ...OPTIONS }).promise;
+  return pdfjs.getDocument({ data: bytes, ...options() }).promise;
 }
 
 /**
@@ -44,15 +45,17 @@ export async function openPdfFromResource(api, ref, { onBytes } = {}) {
     return bytes;
   };
   const first = await readPart(0, Math.min(FIRST, file.size));
-  if (file.size <= first.length) return pdfjs.getDocument({ data: first, ...OPTIONS }).promise;
+  if (file.size <= first.length) return pdfjs.getDocument({ data: first, ...options() }).promise;
 
   const transport = new pdfjs.PDFDataRangeTransport(file.size, first);
+  // pdf.js asks for a part once: one that fails is asked for again here, or its pages would
+  // stay blank until the PDF is opened again.
   transport.requestDataRange = (begin, end) => {
-    readPart(begin, end)
+    retry(() => readPart(begin, end))
       .then((bytes) => transport.onDataRange(begin, bytes))
       .catch((e) => console.warn('PDF: part of the file could not be read', begin, end, e?.message));
   };
-  return pdfjs.getDocument({ range: transport, rangeChunkSize: CHUNK, disableAutoFetch: true, ...OPTIONS }).promise;
+  return pdfjs.getDocument({ range: transport, rangeChunkSize: CHUNK, disableAutoFetch: true, ...options() }).promise;
 }
 
 export { pdfjs };

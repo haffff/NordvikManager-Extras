@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { toIncludeScript } from '../../scripts/includeScript.mjs';
-import { PROPS, parseRows, validateAnnotation, canEditAnnotation, shareDocument, showAgain, annotate, documentName, newDocument } from './pdf.mjs';
+import { PROPS, parseRows, validateAnnotation, canEditAnnotation, shareDocument, showAgain, annotate, documentName, newDocument, MAX_NOTES_PER_PLAYER, MAX_NOTES_CHARS } from './pdf.mjs';
 
 const GAME = '00000000-0000-4000-8000-000000000001';
 const GM = '00000000-0000-4000-8000-0000000000a1';
@@ -190,6 +190,22 @@ test("annotate adds a player's note with them as author, in their colour by defa
   assert.equal(row.fields.shape, '[0.5,0.25]');
   assert.equal(row.fields.page, '4');
   assert.equal(row.fields.text, 'Trapdoor?');
+});
+
+// One player can't fill the notes everyone downloads: a cap per player (GMs aside), and on
+// the size of all of them together.
+test('annotate: a player has at most MAX_NOTES_PER_PLAYER notes; all notes together have a size limit', () => {
+  const game = fakeGame();
+  const pin = JSON.stringify({ kind: 'pin', page: 1, shape: [0.5, 0.5] });
+  const rows = Array.from({ length: MAX_NOTES_PER_PLAYER }, (_, i) => ({ id: 'r' + i, fields: { kind: 'pin', page: '1', shape: '[0.5,0.5]', author: ANA } }));
+  game.setProperty(DOC, PROPS.annotations, JSON.stringify(rows));
+
+  assert.equal(annotate(game, asAna({ documentId: DOC, op: 'add', annotation: pin })).failed, 'yes');
+  assert.equal(annotate(game, asBo({ documentId: DOC, op: 'add', annotation: pin })).failed, 'no');
+  assert.equal(annotate(game, asGm({ documentId: DOC, op: 'add', annotation: pin })).failed, 'no');
+
+  game.setProperty(DOC, PROPS.annotations, JSON.stringify([{ id: 'big', fields: { kind: 'pin', page: '1', shape: '[0.5,0.5]', author: GM, text: 'x'.repeat(MAX_NOTES_CHARS) } }]));
+  assert.equal(annotate(game, asGm({ documentId: DOC, op: 'add', annotation: pin })).failed, 'yes');
 });
 
 test('annotate: only the author or a GM changes or removes; removing takes its replies along', () => {

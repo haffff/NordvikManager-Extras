@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useProperty, fire, idOf } from './api.js';
 import { useNotes } from './useNotes.js';
 import { useSearch } from './useSearch.js';
-import { decodeView, presenterView } from './lib/model.mjs';
+import { decodeView, presenterView, otherPresenterWins } from './lib/model.mjs';
 import { openPdfFromResource } from './lib/pdfEngine.js';
 import { PROPS, parseJson, truthy } from '../../../include_sources/pdf.mjs';
 import { PdfPages } from './components/PdfPages.jsx';
@@ -27,7 +27,9 @@ export function SourcePicker({ api, onPicked }) {
     setBusy('Reading the PDF…');
     try {
       const pdf = await openPdfFromResource(api, refOf(source));
-      await onPicked({ ...source, pageCount: pdf.numPages });
+      const pageCount = pdf.numPages;
+      pdf.loadingTask.destroy();
+      await onPicked({ ...source, pageCount });
     } catch (e) {
       setBusy(`That file couldn't be opened as a PDF (${e?.message ?? e}).`);
     }
@@ -96,12 +98,14 @@ export function Viewer({ api, documentId, player }) {
   useEffect(() => {
     if (!ref) return undefined;
     let live = true;
+    let opened = null;
     setDoc(null);
     setStatus('Opening the PDF…');
     openPdfFromResource(api, ref, { onBytes: (n) => live && setFetched(n) })
-      .then((pdf) => { if (live) { setDoc(pdf); setStatus(''); } })
+      .then((pdf) => { opened = pdf; if (live) { setDoc(pdf); setStatus(''); } else pdf.loadingTask.destroy(); })
       .catch((e) => { if (live) setStatus(`The PDF couldn't be opened: ${e?.message ?? e}`); });
-    return () => { live = false; };
+    // another PDF, or the card closing: pdf.js lets go of its pages, fonts and worker memory
+    return () => { live = false; opened?.loadingTask.destroy(); };
   }, [api, refKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // following: go where the presenter is (a GM, a co-GM; never your own scrolling)
@@ -110,16 +114,23 @@ export function Viewer({ api, documentId, player }) {
     setGoto((g) => ({ page: view.page, scroll: view.scroll, seq: (g?.seq ?? 0) + 1, smooth: true }));
   }, [follow, view, doc]);
 
-  // presenting: the GM's place goes to the players (a few times a second at most)
+  // presenting: the GM's place goes to the players (a few times a second at most). If another
+  // GM starts presenting, whoever ticked Present last goes on and the other stops.
   const pending = useRef(null);
   const lastSent = useRef(0);
+  const presentingSince = useRef(0);
   useEffect(() => {
     if (!presenting || !isGm) return undefined;
-    const next = presenterView(view, position.page, position.scroll, player.me.id);
+    if (otherPresenterWins(view, player.me.id, presentingSince.current)) {
+      setPresenting(false);
+      setStatus('Another GM is presenting now.');
+      return undefined;
+    }
+    const next = presenterView(view?.by === player.me.id ? view : null, position.page, position.scroll, player.me.id);
     if (!next) return undefined;
     const send = () => {
       lastSent.current = Date.now();
-      api.Properties.Global.Set(documentId, PROPS.view, JSON.stringify({ ...next, at: new Date().toISOString() })).catch(() => {});
+      api.Properties.Global.Set(documentId, PROPS.view, JSON.stringify({ ...next, since: presentingSince.current, at: new Date().toISOString() })).catch(() => {});
     };
     const wait = PRESENT_EVERY_MS - (Date.now() - lastSent.current);
     clearTimeout(pending.current);
@@ -191,7 +202,10 @@ export function Viewer({ api, documentId, player }) {
           {isGm && (
             <label className="pdf-follow" title="Everyone following scrolls with you">
               <input type="checkbox" checked={presenting} disabled={!shared}
-                onChange={(e) => { setPresenting(e.target.checked); if (e.target.checked) setFollow(false); }} /> Present
+                onChange={(e) => {
+                  if (e.target.checked) { presentingSince.current = Date.now(); setFollow(false); setStatus(''); }
+                  setPresenting(e.target.checked);
+                }} /> Present
             </label>
           )}
           <label className="pdf-follow" title="Scroll along with whoever presents">

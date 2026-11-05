@@ -28,6 +28,10 @@ export const MAX_TEXT = 2000;
 export const MAX_RECTS = 100;
 export const MAX_POINTS = 1500;
 export const MAX_ANNOTATIONS = 2000;
+// One player's notes (GMs aside), and all notes together (characters of the stored list):
+// every reader downloads and reads them.
+export const MAX_NOTES_PER_PLAYER = 300;
+export const MAX_NOTES_CHARS = 2000000;
 const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const UPLOAD_KEY = /^pdf_src_[0-9a-f]{32}\.pdf$/;
 const ROW_ID = /^[A-Za-z0-9_-]{1,64}$/;
@@ -227,12 +231,15 @@ export function annotate(game, vars) {
   const source = loadDocument(game, documentId);
   if (!source) return fail('That isn\'t a PDF.');
   const isGm = truthy(vars.playerIsGm);
-  const rows = parseRows(game.getProperty(documentId, PROPS.annotations, '[]'));
+  const stored = game.getProperty(documentId, PROPS.annotations, '[]');
+  const rows = parseRows(stored);
   const list = { ParentId: documentId, PropertyName: PROPS.annotations };
   const op = text(vars.op);
 
   if (op === 'add') {
-    if (rows.length >= MAX_ANNOTATIONS) return fail('This PDF has as many notes as it can hold.');
+    if (rows.length >= MAX_ANNOTATIONS || String(stored || '').length >= MAX_NOTES_CHARS) return fail('This PDF has as many notes as it can hold.');
+    if (!isGm && rows.filter((r) => r.fields.author === text(vars.playerId)).length >= MAX_NOTES_PER_PLAYER)
+      return fail(`You can have at most ${MAX_NOTES_PER_PLAYER} notes on one PDF.`);
     const checked = validateAnnotation(vars.annotation, source.pageCount);
     if (!checked.ok) return fail(checked.error);
     const a = checked.value;

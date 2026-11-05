@@ -32,4 +32,4 @@ instant.
 
 ## Limits
 
-Up to 2000 notes per PDF. A note's text can be up to 2000 characters, and a drawing up to 1500 points.
+Up to 2000 notes per PDF, and 300 per player (GMs have no own limit). A note's text can be up to 2000 characters, and a drawing up to 1500 points.
