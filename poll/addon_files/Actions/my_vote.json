@@ -4,7 +4,7 @@
   "description": "Tells a voter what they picked in a poll (only their own). Args: pollId, replyTo.",
   "hook": 0,
   "prefix": "poll",
-  "genericPermission": 0,
+  "genericPermission": 2,
   "gmPermission": 31,
   "content": [
     {

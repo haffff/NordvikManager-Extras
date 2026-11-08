@@ -3,7 +3,7 @@
   "key": "pdf",
   "name": "PDF Viewer",
   "description": "Read PDFs in the game, share them with your players and present them: players follow your scrolling, and everyone can highlight, draw, pin notes and reply. Only the parts of a PDF on screen are downloaded, so big books open fast. PDFs come from the Materials panel or are uploaded in the viewer.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "haffff",
   "license": "AGPL-3.0-only",
   "repositoryUrl": "https://github.com/haffff/NordvikManager-Extras",

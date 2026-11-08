@@ -4,7 +4,7 @@
   "description": "Adds, changes or removes a note on a PDF, for anyone who can read it; only the note's author or a GM changes or removes it. Args: documentId, op (add, update, remove), itemId, annotation (JSON: kind, page, shape, color, text, parent).",
   "hook": 0,
   "prefix": "pdf",
-  "genericPermission": 0,
+  "genericPermission": 2,
   "gmPermission": 31,
   "content": [
     {

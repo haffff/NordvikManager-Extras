@@ -3,7 +3,7 @@
   "key": "poll",
   "name": "Poll",
   "description": "Let the table vote: a poll window pops up for everyone, or vote with /vote in chat. Secret ballots, results hidden until the poll closes, multiple choice and changing your vote are switches per poll. The GM decides whether players can start polls too.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "haffff",
   "license": "AGPL-3.0-only",
   "repositoryUrl": "https://github.com/haffff/NordvikManager-Extras",

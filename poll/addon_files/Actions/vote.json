@@ -4,7 +4,7 @@
   "description": "Counts a vote in a poll. Args: pollId, choices (numbers from 1, e.g. \"1,3\", or an option's text), replyTo.",
   "hook": 0,
   "prefix": "poll",
-  "genericPermission": 0,
+  "genericPermission": 2,
   "gmPermission": 31,
   "content": [
     {

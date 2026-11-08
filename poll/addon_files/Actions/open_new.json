@@ -4,7 +4,7 @@
   "description": "Opens the new-poll window for whoever may start a poll (the GM's setting).",
   "hook": 0,
   "prefix": "poll",
-  "genericPermission": 0,
+  "genericPermission": 2,
   "gmPermission": 31,
   "content": [
     {
