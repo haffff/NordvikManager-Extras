@@ -4,7 +4,7 @@
   "description": "Shows the current open poll to whoever asks.",
   "hook": 0,
   "prefix": "poll",
-  "genericPermission": 0,
+  "genericPermission": 2,
   "gmPermission": 31,
   "content": [
     {

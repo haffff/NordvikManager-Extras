@@ -4,7 +4,7 @@
   "description": "Starts a poll: a private card for its ballots, and what everyone may see on the game; announced in chat and shown to everyone. Args: question, options (JSON list or one per line), multi, secret, hideResults, allowChange, replyTo.",
   "hook": 0,
   "prefix": "poll",
-  "genericPermission": 0,
+  "genericPermission": 2,
   "gmPermission": 31,
   "content": [
     {

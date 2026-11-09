@@ -1,6 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/haffff/NordvikManager-Addons/refs/heads/main/schemas/action.json",
   "name": "show_lore",
+  "genericPermission": 2,
   "description": "Shows the Obsidian note pinned to a token to whoever asked; the card's own permissions decide whether they may read it.",
   "hook": 0,
   "prefix": "obsidian",

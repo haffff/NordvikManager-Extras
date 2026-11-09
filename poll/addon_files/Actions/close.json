@@ -4,7 +4,7 @@
   "description": "Closes a poll and posts the results to chat. The GM or whoever started it. Args: pollId, replyTo.",
   "hook": 0,
   "prefix": "poll",
-  "genericPermission": 0,
+  "genericPermission": 2,
   "gmPermission": 31,
   "content": [
     {

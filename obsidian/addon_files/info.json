@@ -3,7 +3,7 @@
   "key": "obsidian",
   "name": "Obsidian",
   "description": "Search your Obsidian vault from the game, pin notes to tokens and share lore with players when the story gets there. Needs Obsidian open with the Local REST API plugin (its HTTP server on); the server's admin allows it in Application Settings > Server > Local network access.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "haffff",
   "license": "AGPL-3.0-only",
   "repositoryUrl": "https://github.com/haffff/NordvikManager-Extras",
